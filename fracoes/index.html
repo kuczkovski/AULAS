@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explorador de Frações — 6º ano</title>
+<style>
+  :root{
+    --roxo:#7c3aed;
+    --roxo-claro:#ede9fe;
+    --rosa:#ec4899;
+    --teal:#0d9488;
+    --teal-claro:#ccfbf1;
+    --laranja:#f97316;
+    --amarelo:#fbbf24;
+    --cinza:#e5e7eb;
+    --cinza-escuro:#6b7280;
+    --texto:#1f2937;
+    --branco:#ffffff;
+    --verde:#16a34a;
+    --vermelho:#dc2626;
+    --sombra: 0 6px 18px rgba(31,41,55,.10);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: "Segoe UI", Verdana, Arial, sans-serif;
+    background: linear-gradient(160deg,#fdf4ff 0%, #eef2ff 45%, #ecfeff 100%);
+    color:var(--texto);
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  header{
+    text-align:center;
+    padding:28px 16px 10px;
+  }
+  header h1{
+    margin:0 0 6px;
+    font-size:2rem;
+    color:var(--roxo);
+  }
+  header p{
+    margin:0;
+    color:var(--cinza-escuro);
+    font-size:1.05rem;
+  }
+  .tabs{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:22px auto 0;
+    max-width:900px;
+    padding:0 12px;
+  }
+  .tab-btn{
+    border:none;
+    border-radius:14px;
+    padding:14px 20px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    background:var(--branco);
+    color:var(--roxo);
+    box-shadow:var(--sombra);
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .tab-btn:hover{ transform:translateY(-2px); }
+  .tab-btn.active{
+    background:var(--roxo);
+    color:var(--branco);
+  }
+  main{
+    max-width:980px;
+    margin:26px auto;
+    padding:0 16px;
+  }
+  .panel{ display:none; animation:fadein .25s ease; }
+  .panel.active{ display:block; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .card{
+    background:var(--branco);
+    border-radius:20px;
+    box-shadow:var(--sombra);
+    padding:22px 24px;
+    margin-bottom:20px;
+  }
+  .card h2{
+    margin-top:0;
+    color:var(--roxo);
+    font-size:1.35rem;
+  }
+  .card h3{
+    color:var(--teal);
+    font-size:1.05rem;
+    margin-bottom:8px;
+  }
+  .lead{ color:var(--cinza-escuro); line-height:1.5; }
+
+  .row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:10px 0; }
+  .label{ font-weight:700; margin-right:4px; }
+
+  .pick{
+    border:2px solid var(--cinza);
+    background:var(--branco);
+    color:var(--texto);
+    border-radius:10px;
+    padding:8px 14px;
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .pick:hover{ border-color:var(--roxo); }
+  .pick.selected{
+    background:var(--roxo);
+    border-color:var(--roxo);
+    color:var(--branco);
+  }
+  .pick.small{ padding:6px 10px; font-size:.9rem; }
+
+  input[type=number]{
+    width:80px;
+    padding:8px;
+    border:2px solid var(--cinza);
+    border-radius:10px;
+    font-size:1rem;
+    text-align:center;
+  }
+
+  .btn{
+    border:none;
+    border-radius:12px;
+    padding:12px 20px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--branco);
+    background:var(--roxo);
+    box-shadow:var(--sombra);
+    transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); filter:brightness(1.05); }
+  .btn:active{ transform:translateY(0); }
+  .btn.secondary{ background:var(--teal); }
+  .btn.warm{ background:var(--laranja); }
+  .btn.pink{ background:var(--rosa); }
+
+  /* ---- Tab 1: fração de quantidade ---- */
+  .item-box{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:16px;
+    border-radius:14px;
+    background:#fafafa;
+    min-height:70px;
+  }
+  .item{
+    font-size:1.6rem;
+    width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    padding:10px;
+    border-radius:12px;
+    border:3px dashed var(--cinza);
+    background:#f3f4f6;
+    position:relative;
+    margin:4px;
+  }
+  .group.on{
+    border:3px solid var(--roxo);
+    background:var(--roxo-claro);
+  }
+  .group .tag{
+    position:absolute;
+    top:-14px; left:8px;
+    background:var(--cinza-escuro);
+    color:var(--branco);
+    font-size:.7rem;
+    padding:2px 8px;
+    border-radius:8px;
+    font-weight:700;
+  }
+  .group.on .tag{ background:var(--roxo); }
+  .groups-wrap{ display:flex; flex-wrap:wrap; gap:14px; padding:16px 6px 6px; }
+
+  .steps{
+    background:#fff7ed;
+    border-left:5px solid var(--laranja);
+    padding:14px 16px;
+    border-radius:10px;
+    margin-top:14px;
+    line-height:1.7;
+    font-size:1.02rem;
+  }
+  .steps b{ color:var(--laranja); }
+  .result-badge{
+    display:inline-block;
+    background:var(--verde);
+    color:var(--branco);
+    font-weight:800;
+    padding:6px 14px;
+    border-radius:10px;
+    margin-top:6px;
+    font-size:1.1rem;
+  }
+
+  /* ---- fraction strip ---- */
+  .strip{
+    display:flex;
+    width:100%;
+    height:64px;
+    border-radius:10px;
+    overflow:hidden;
+    border:3px solid var(--texto);
+  }
+  .strip .seg{
+    flex:1;
+    border-right:2px solid var(--texto);
+    display:flex; align-items:center; justify-content:center;
+    font-size:.8rem;
+    color:#374151;
+  }
+  .strip .seg:last-child{ border-right:none; }
+  .strip .seg.filled{ background:var(--teal); }
+  .strip .seg.empty{ background:#f0fdfa; }
+  .strip-label{
+    text-align:center;
+    font-weight:800;
+    margin-top:8px;
+    font-size:1.15rem;
+    color:var(--texto);
+  }
+  .strip-wrap{ flex:1; min-width:220px; }
+  .compare-wrap{ display:flex; gap:22px; flex-wrap:wrap; align-items:flex-end; margin-top:12px; }
+
+  .chain{
+    margin-top:12px;
+    font-size:1.3rem;
+    font-weight:800;
+    color:var(--roxo);
+    letter-spacing:.5px;
+  }
+
+  .feedback{
+    margin-top:12px;
+    padding:12px 16px;
+    border-radius:10px;
+    font-weight:700;
+    display:none;
+  }
+  .feedback.ok{ background:#dcfce7; color:var(--verde); display:block; }
+  .feedback.bad{ background:#fee2e2; color:var(--vermelho); display:block; }
+
+  .score{
+    font-weight:700;
+    color:var(--cinza-escuro);
+    margin-left:auto;
+  }
+
+  /* ---- memory game ---- */
+  .memory-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(120px,1fr));
+    gap:12px;
+    margin-top:14px;
+  }
+  .mem-card{
+    background:var(--roxo);
+    border-radius:14px;
+    height:110px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--branco);
+    font-size:1.4rem;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:var(--sombra);
+    transition:transform .15s ease;
+    user-select:none;
+  }
+  .mem-card:hover{ transform:scale(1.03); }
+  .mem-card.flipped{ background:var(--branco); color:var(--texto); border:3px solid var(--teal); cursor:default; }
+  .mem-card.matched{ background:#dcfce7; color:var(--verde); border:3px solid var(--verde); cursor:default; }
+  .mem-card .strip-mini{ width:80%; height:22px; display:flex; border-radius:6px; overflow:hidden; border:2px solid var(--texto); margin-top:6px; }
+  .mem-card .strip-mini .seg{ flex:1; border-right:1px solid var(--texto); }
+  .mem-card .strip-mini .seg:last-child{ border-right:none; }
+  .mem-card .strip-mini .seg.filled{ background:var(--teal); }
+  .mem-card .strip-mini .seg.empty{ background:#fff; }
+  .mem-card .mem-label{ font-size:1.1rem; }
+
+  /* ---- simplify ---- */
+  .frac-input{
+    display:inline-flex;
+    flex-direction:column;
+    align-items:center;
+    vertical-align:middle;
+    margin:0 8px;
+  }
+  .frac-input .bar{ width:60px; height:2px; background:var(--texto); margin:2px 0; }
+
+  .divisor-chip{
+    display:inline-block;
+    background:var(--teal-claro);
+    color:var(--teal);
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:8px;
+    margin:2px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--cinza-escuro);
+    font-size:.85rem;
+    margin-top:30px;
+  }
+
+  @media (max-width:600px){
+    header h1{ font-size:1.5rem; }
+    .card{ padding:16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧮 Explorador de Frações</h1>
+  <p>Fração de uma quantidade · Frações equivalentes · Simplificação — atividade para o 6º ano</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="t1">🍬 Fração de uma quantidade</button>
+  <button class="tab-btn" data-tab="t2">🍕 Frações equivalentes</button>
+  <button class="tab-btn" data-tab="t3">✂️ Simplificação</button>
+</div>
+
+<main>
+
+  <!-- ==================== TAB 1 ==================== -->
+  <section id="t1" class="panel active">
+    <div class="card">
+      <h2>Qual é a fração de uma quantidade?</h2>
+      <p class="lead">Escolha uma quantidade de itens, depois escolha uma fração. A ferramenta vai separar os itens em grupos iguais e destacar quantos grupos você pediu.</p>
+
+      <h3>1. Escolha a quantidade</h3>
+      <div class="row" id="q-qtd"></div>
+      <div class="row">
+        <span class="label">Quantidade personalizada:</span>
+        <input type="number" id="q-custom" min="4" max="96" placeholder="ex: 28">
+        <button class="btn secondary" id="q-custom-btn">usar</button>
+      </div>
+
+      <h3>2. Escolha o ícone</h3>
+      <div class="row" id="q-icon"></div>
+
+      <h3>3. Escolha a fração</h3>
+      <div class="row">
+        <span class="label">Denominador (em quantas partes dividir):</span>
+      </div>
+      <div class="row" id="q-den"></div>
+      <div class="row">
+        <span class="label">Numerador (quantas partes queremos):</span>
+      </div>
+      <div class="row" id="q-num"></div>
+
+      <div class="row">
+        <button class="btn" id="q-show">Mostrar a divisão</button>
+      </div>
+
+      <div id="q-visual" class="groups-wrap"></div>
+      <div id="q-steps" class="steps" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Desafio rápido</h2>
+      <p class="lead">Calcule mentalmente e digite o resultado.</p>
+      <div class="row">
+        <button class="btn warm" id="q-new-challenge">Novo desafio</button>
+        <span class="score" id="q-score">Acertos: 0 / 0</span>
+      </div>
+      <div id="q-challenge-text" class="lead" style="font-size:1.15rem; font-weight:700; margin-top:10px;"></div>
+      <div class="row">
+        <input type="number" id="q-answer" placeholder="?">
+        <button class="btn secondary" id="q-check">Conferir</button>
+        <button class="btn pink" id="q-reveal">Ver com desenho</button>
+      </div>
+      <div id="q-feedback" class="feedback"></div>
+    </div>
+  </section>
+
+  <!-- ==================== TAB 2 ==================== -->
+  <section id="t2" class="panel">
+    <div class="card">
+      <h2>Frações equivalentes</h2>
+      <p class="lead">Duas frações são <b>equivalentes</b> quando representam a mesma quantidade, mesmo tendo números diferentes. Escolha uma fração base e veja o que acontece quando multiplicamos o numerador e o denominador pelo mesmo número.</p>
+
+      <h3>Fração base</h3>
+      <div class="row" id="eq-base"></div>
+
+      <h3>Multiplicar por</h3>
+      <div class="row">
+        <input type="range" id="eq-slider" min="1" max="6" value="1" step="1" style="flex:1; min-width:200px;">
+        <span class="pick selected" id="eq-k-label" style="cursor:default;">× 1</span>
+      </div>
+
+      <div class="compare-wrap">
+        <div class="strip-wrap">
+          <div id="eq-strip-base" class="strip"></div>
+          <div class="strip-label" id="eq-label-base"></div>
+        </div>
+        <div style="font-size:2rem; color:var(--cinza-escuro);">=</div>
+        <div class="strip-wrap">
+          <div id="eq-strip-k" class="strip"></div>
+          <div class="strip-label" id="eq-label-k"></div>
+        </div>
+      </div>
+
+      <div class="chain" id="eq-chain"></div>
+      <p class="lead" id="eq-explain" style="margin-top:10px;"></p>
+    </div>
+
+    <div class="card">
+      <h2>🧠 Jogo da memória: encontre os pares equivalentes</h2>
+      <p class="lead">Clique em duas cartas. Se as frações forem equivalentes, elas ficam verdes e combinadas!</p>
+      <div class="row">
+        <button class="btn warm" id="mem-restart">Reiniciar jogo</button>
+        <span class="score" id="mem-score">Pares encontrados: 0 / 0 · Tentativas: 0</span>
+      </div>
+      <div class="memory-grid" id="mem-grid"></div>
+      <div id="mem-feedback" class="feedback"></div>
+    </div>
+  </section>
+
+  <!-- ==================== TAB 3 ==================== -->
+  <section id="t3" class="panel">
+    <div class="card">
+      <h2>Simplificação de frações</h2>
+      <p class="lead">Simplificar uma fração é dividir o numerador e o denominador pelo mesmo número (um divisor comum), até que não seja mais possível dividir — chegando na <b>fração irredutível</b>.</p>
+
+      <div class="row">
+        <span class="label">Fração:</span>
+        <div class="frac-input">
+          <input type="number" id="s-num" value="8" min="1" max="99" style="width:64px;">
+          <div class="bar"></div>
+          <input type="number" id="s-den" value="12" min="1" max="99" style="width:64px;">
+        </div>
+        <button class="btn secondary" id="s-random">🎲 fração aleatória</button>
+        <button class="btn" id="s-go">Simplificar passo a passo</button>
+      </div>
+
+      <div id="s-steps" class="steps" style="display:none;"></div>
+
+      <div class="compare-wrap" id="s-compare" style="display:none;">
+        <div class="strip-wrap">
+          <div id="s-strip-orig" class="strip"></div>
+          <div class="strip-label" id="s-label-orig"></div>
+        </div>
+        <div style="font-size:2rem; color:var(--cinza-escuro);">=</div>
+        <div class="strip-wrap">
+          <div id="s-strip-simpl" class="strip"></div>
+          <div class="strip-label" id="s-label-simpl"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Desafio: simplifique você mesmo</h2>
+      <p class="lead">Digite a fração simplificada (irredutível) da fração mostrada.</p>
+      <div class="row">
+        <button class="btn warm" id="s-new-challenge">Novo desafio</button>
+        <span class="score" id="s-score">Acertos: 0 / 0</span>
+      </div>
+      <div id="s-challenge-text" class="lead" style="font-size:1.3rem; font-weight:800; margin-top:10px;"></div>
+      <div class="row">
+        <div class="frac-input">
+          <input type="number" id="s-c-num" style="width:64px;">
+          <div class="bar"></div>
+          <input type="number" id="s-c-den" style="width:64px;">
+        </div>
+        <button class="btn secondary" id="s-c-check">Conferir</button>
+      </div>
+      <div id="s-c-feedback" class="feedback"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Ferramenta educacional livre — Frações para o 6º ano.</footer>
+
+<script>
+/* ============ util ============ */
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b, a%b]; } return a; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[randInt(0,arr.length-1)]; }
+
+const OK_MSGS = ["Muito bem! 🎉","Isso mesmo! ⭐","Perfeito! 👏","Você acertou! 🥳","Excelente! 🌟"];
+const BAD_MSGS = ["Quase lá, tente de novo! 💪","Não foi dessa vez, mas continue! 🙂","Revise o cálculo e tente outra vez."];
+
+/* ============ tabs ============ */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* =====================================================================
+   TAB 1 — Fração de uma quantidade
+   ===================================================================== */
+const QTY_OPTIONS = [12, 18, 20, 24, 30, 36];
+const ICONS = ["🍬","⭐","🍎","⚽","🎈"];
+
+let qState = { qtd: 24, icon: "🍬", den: 4, num: 3, correct:0, total:0, currentChallenge:null };
+
+function buildPickRow(container, values, onPick, formatFn, selectedValue){
+  container.innerHTML = "";
+  values.forEach(v=>{
+    const b = document.createElement("button");
+    b.className = "pick" + (v===selectedValue ? " selected":"");
+    b.textContent = formatFn ? formatFn(v) : v;
+    b.addEventListener("click", ()=>{ onPick(v); });
+    container.appendChild(b);
+  });
+}
+
+function divisorsOf(n){
+  const d=[];
+  for(let i=2;i<=Math.min(n-1,10);i++){ if(n % i === 0) d.push(i); }
+  if(d.length===0) d.push(2);
+  return d;
+}
+
+function refreshQtyControls(){
+  buildPickRow(document.getElementById("q-qtd"), QTY_OPTIONS, v=>{
+    qState.qtd = v; clampDen(); renderQtyPickers(); clearQtyVisual();
+  }, v=>v+" itens", qState.qtd);
+
+  buildPickRow(document.getElementById("q-icon"), ICONS, v=>{
+    qState.icon = v; renderQtyPickers(); clearQtyVisual();
+  }, v=>v, qState.icon);
+
+  renderQtyPickers();
+}
+
+function clampDen(){
+  const dens = divisorsOf(qState.qtd);
+  if(!dens.includes(qState.den)) qState.den = dens[0];
+  if(qState.num >= qState.den) qState.num = 1;
+}
+
+function renderQtyPickers(){
+  const dens = divisorsOf(qState.qtd);
+  buildPickRow(document.getElementById("q-den"), dens, v=>{
+    qState.den = v; if(qState.num >= v) qState.num = 1;
+    renderQtyPickers(); clearQtyVisual();
+  }, v=>v, qState.den);
+
+  const nums = Array.from({length: qState.den-1}, (_,i)=>i+1);
+  buildPickRow(document.getElementById("q-num"), nums, v=>{
+    qState.num = v; clearQtyVisual();
+  }, v=>v, qState.num);
+}
+
+function clearQtyVisual(){
+  document.getElementById("q-visual").innerHTML = "";
+  document.getElementById("q-steps").style.display = "none";
+}
+
+function renderQtyVisual(qtd, den, num, icon){
+  const wrap = document.getElementById("q-visual");
+  wrap.innerHTML = "";
+  const perGroup = qtd / den;
+  for(let g=0; g<den; g++){
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "group" + (g < num ? " on" : "");
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = "parte " + (g+1);
+    groupDiv.appendChild(tag);
+    for(let i=0;i<perGroup;i++){
+      const it = document.createElement("div");
+      it.className = "item";
+      it.textContent = icon;
+      groupDiv.appendChild(it);
+    }
+    wrap.appendChild(groupDiv);
+  }
+
+  const perGroupCount = qtd/den;
+  const result = perGroupCount * num;
+  const steps = document.getElementById("q-steps");
+  steps.style.display = "block";
+  steps.innerHTML = `
+    <div><b>Passo 1:</b> dividir ${qtd} em ${den} partes iguais → ${qtd} ÷ ${den} = ${perGroupCount} em cada parte.</div>
+    <div><b>Passo 2:</b> queremos ${num} dessas partes → ${num} × ${perGroupCount} = ${result}.</div>
+    <div class="result-badge">${num}/${den} de ${qtd} = ${result}</div>
+  `;
+}
+
+document.getElementById("q-custom-btn").addEventListener("click", ()=>{
+  const v = parseInt(document.getElementById("q-custom").value, 10);
+  if(!v || v < 4 || v > 96){ alert("Escolha um número entre 4 e 96."); return; }
+  qState.qtd = v;
+  clampDen();
+  refreshQtyControls();
+  clearQtyVisual();
+});
+
+document.getElementById("q-show").addEventListener("click", ()=>{
+  renderQtyVisual(qState.qtd, qState.den, qState.num, qState.icon);
+});
+
+refreshQtyControls();
+
+/* ---- desafio tab 1 ---- */
+function newQtyChallenge(){
+  const qtd = pick(QTY_OPTIONS.concat([28,32,40,42,45,48,54,60]));
+  const dens = divisorsOf(qtd);
+  const den = pick(dens);
+  const num = randInt(1, den-1);
+  qState.currentChallenge = {qtd, den, num, icon: pick(ICONS)};
+  document.getElementById("q-challenge-text").textContent =
+    `Quanto é ${num}/${den} de ${qtd}?`;
+  document.getElementById("q-answer").value = "";
+  document.getElementById("q-feedback").className = "feedback";
+  document.getElementById("q-feedback").textContent = "";
+}
+document.getElementById("q-new-challenge").addEventListener("click", newQtyChallenge);
+newQtyChallenge();
+
+document.getElementById("q-check").addEventListener("click", ()=>{
+  const c = qState.currentChallenge;
+  if(!c) return;
+  const correctAnswer = (c.qtd/c.den)*c.num;
+  const given = parseInt(document.getElementById("q-answer").value, 10);
+  qState.total++;
+  const fb = document.getElementById("q-feedback");
+  if(given === correctAnswer){
+    qState.correct++;
+    fb.className = "feedback ok";
+    fb.textContent = pick(OK_MSGS) + ` ${c.num}/${c.den} de ${c.qtd} = ${correctAnswer}.`;
+  } else {
+    fb.className = "feedback bad";
+    fb.textContent = pick(BAD_MSGS) + ` A resposta certa é ${correctAnswer}.`;
+  }
+  document.getElementById("q-score").textContent = `Acertos: ${qState.correct} / ${qState.total}`;
+});
+
+document.getElementById("q-reveal").addEventListener("click", ()=>{
+  const c = qState.currentChallenge;
+  if(!c) return;
+  qState.qtd = c.qtd; qState.den = c.den; qState.num = c.num; qState.icon = c.icon;
+  refreshQtyControls();
+  document.querySelectorAll(".tab-btn")[0].click();
+  renderQtyVisual(c.qtd, c.den, c.num, c.icon);
+});
+
+/* =====================================================================
+   TAB 2 — Frações equivalentes
+   ===================================================================== */
+const BASE_FRACTIONS = [
+  {n:1,d:2},{n:1,d:3},{n:2,d:3},{n:1,d:4},{n:3,d:4},{n:1,d:5},{n:2,d:5},{n:1,d:6}
+];
+let eqState = { base: BASE_FRACTIONS[0], k: 1 };
+
+function buildStrip(container, den, num, colorClass){
+  container.innerHTML = "";
+  for(let i=0;i<den;i++){
+    const seg = document.createElement("div");
+    seg.className = "seg " + (i < num ? "filled":"empty");
+    container.appendChild(seg);
+  }
+}
+
+function renderEqTab(){
+  buildStrip(document.getElementById("eq-strip-base"), eqState.base.d, eqState.base.n);
+  document.getElementById("eq-label-base").textContent = `${eqState.base.n}/${eqState.base.d}`;
+
+  const kn = eqState.base.n * eqState.k;
+  const kd = eqState.base.d * eqState.k;
+  buildStrip(document.getElementById("eq-strip-k"), kd, kn);
+  document.getElementById("eq-label-k").textContent = `${kn}/${kd}`;
+
+  document.getElementById("eq-k-label").textContent = "× " + eqState.k;
+
+  let chainParts = [];
+  for(let k=1;k<=eqState.k;k++){
+    chainParts.push(`${eqState.base.n*k}/${eqState.base.d*k}`);
+  }
+  document.getElementById("eq-chain").textContent = chainParts.join("  =  ");
+
+  document.getElementById("eq-explain").textContent =
+    `Multiplicamos o numerador (${eqState.base.n}) e o denominador (${eqState.base.d}) por ${eqState.k}: `+
+    `${eqState.base.n} × ${eqState.k} = ${kn}  e  ${eqState.base.d} × ${eqState.k} = ${kd}. `+
+    `As duas tiras têm exatamente a mesma parte colorida — por isso ${eqState.base.n}/${eqState.base.d} e ${kn}/${kd} são equivalentes.`;
+}
+
+function refreshEqBasePicker2(){
+  const container = document.getElementById("eq-base");
+  container.innerHTML = "";
+  BASE_FRACTIONS.forEach(f=>{
+    const b = document.createElement("button");
+    b.className = "pick" + (f.n===eqState.base.n && f.d===eqState.base.d ? " selected":"");
+    b.textContent = `${f.n}/${f.d}`;
+    b.addEventListener("click", ()=>{
+      eqState.base = f; eqState.k = 1;
+      document.getElementById("eq-slider").value = 1;
+      refreshEqBasePicker2();
+      renderEqTab();
+    });
+    container.appendChild(b);
+  });
+}
+refreshEqBasePicker2();
+renderEqTab();
+
+document.getElementById("eq-slider").addEventListener("input", (e)=>{
+  eqState.k = parseInt(e.target.value, 10);
+  renderEqTab();
+});
+
+/* ---- memory game ---- */
+let memState = { cards: [], flipped: [], matched: 0, attempts: 0, pairs: 0, lock:false };
+
+function fracLabel(n,d){ return `${n}/${d}`; }
+
+function buildMemoryDeck(){
+  // pick some base fractions and generate a simplified/equivalent partner
+  const bases = [
+    {n:1,d:2},{n:1,d:3},{n:2,d:3},{n:1,d:4},{n:3,d:4},{n:2,d:5}
+  ];
+  const deck = [];
+  bases.forEach(f=>{
+    const k = randInt(2,4);
+    deck.push({n:f.n, d:f.d, group:`${f.n}_${f.d}`});
+    deck.push({n:f.n*k, d:f.d*k, group:`${f.n}_${f.d}`});
+  });
+  // shuffle
+  for(let i=deck.length-1;i>0;i--){
+    const j = randInt(0,i);
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+function renderMemoryGrid(){
+  memState.cards = buildMemoryDeck();
+  memState.flipped = [];
+  memState.matched = 0;
+  memState.attempts = 0;
+  memState.pairs = memState.cards.length/2;
+  memState.lock = false;
+  document.getElementById("mem-feedback").className = "feedback";
+  document.getElementById("mem-feedback").textContent = "";
+
+  const grid = document.getElementById("mem-grid");
+  grid.innerHTML = "";
+  memState.cards.forEach((card, idx)=>{
+    const el = document.createElement("div");
+    el.className = "mem-card";
+    el.dataset.idx = idx;
+    el.innerHTML = "🎴";
+    el.addEventListener("click", ()=> onMemCardClick(idx, el));
+    grid.appendChild(el);
+  });
+  updateMemScore();
+}
+
+function cardContentHTML(card){
+  let segs = "";
+  for(let i=0;i<card.d;i++){
+    segs += `<div class="seg ${i<card.n ? 'filled':'empty'}"></div>`;
+  }
+  return `<div><div class="mem-label">${card.n}/${card.d}</div><div class="strip-mini">${segs}</div></div>`;
+}
+
+function onMemCardClick(idx, el){
+  if(memState.lock) return;
+  if(el.classList.contains("flipped") || el.classList.contains("matched")) return;
+  if(memState.flipped.length === 2) return;
+
+  el.classList.add("flipped");
+  el.innerHTML = cardContentHTML(memState.cards[idx]);
+  memState.flipped.push({idx, el});
+
+  if(memState.flipped.length === 2){
+    memState.attempts++;
+    memState.lock = true;
+    const [a,b] = memState.flipped;
+    const ca = memState.cards[a.idx], cb = memState.cards[b.idx];
+    const match = (ca.n * cb.d === cb.n * ca.d);
+
+    setTimeout(()=>{
+      const fb = document.getElementById("mem-feedback");
+      if(match){
+        a.el.classList.remove("flipped"); a.el.classList.add("matched");
+        b.el.classList.remove("flipped"); b.el.classList.add("matched");
+        memState.matched++;
+        fb.className = "feedback ok";
+        fb.textContent = `${pick(OK_MSGS)} ${ca.n}/${ca.d} é equivalente a ${cb.n}/${cb.d}.`;
+        if(memState.matched === memState.pairs){
+          fb.textContent += " 🏆 Você encontrou todos os pares!";
+        }
+      } else {
+        a.el.classList.remove("flipped"); a.el.innerHTML = "🎴";
+        b.el.classList.remove("flipped"); b.el.innerHTML = "🎴";
+        fb.className = "feedback bad";
+        fb.textContent = `${ca.n}/${ca.d} e ${cb.n}/${cb.d} não são equivalentes. Tente novamente!`;
+      }
+      memState.flipped = [];
+      memState.lock = false;
+      updateMemScore();
+    }, 900);
+  }
+}
+
+function updateMemScore(){
+  document.getElementById("mem-score").textContent =
+    `Pares encontrados: ${memState.matched} / ${memState.pairs} · Tentativas: ${memState.attempts}`;
+}
+
+document.getElementById("mem-restart").addEventListener("click", renderMemoryGrid);
+renderMemoryGrid();
+
+/* =====================================================================
+   TAB 3 — Simplificação
+   ===================================================================== */
+function commonDivisors(a,b){
+  const res = [];
+  const lim = Math.min(a,b);
+  for(let i=2;i<=lim;i++){
+    if(a%i===0 && b%i===0) res.push(i);
+  }
+  return res;
+}
+
+function simplifySteps(num, den){
+  let n = num, d = den;
+  const lines = [];
+  const divs = commonDivisors(n,d);
+  if(divs.length === 0){
+    lines.push(`${n} e ${d} não têm divisores em comum (além de 1) — a fração já é irredutível.`);
+    return { finalN:n, finalD:d, lines };
+  }
+  while(true){
+    const cd = commonDivisors(n,d);
+    if(cd.length===0) break;
+    const chosen = cd[cd.length-1]; // greatest common divisor found at this pass
+    const newN = n/chosen, newD = d/chosen;
+    lines.push(`${n}/${d} ÷ ${chosen} = ${newN}/${newD}`);
+    n = newN; d = newD;
+  }
+  lines.push(`Fração irredutível: ${n}/${d} (o único divisor comum de ${n} e ${d} é o 1).`);
+  return { finalN:n, finalD:d, lines };
+}
+
+function renderSimplify(num, den){
+  const g = gcd(num, den);
+  const { finalN, finalD, lines } = simplifySteps(num, den);
+  const steps = document.getElementById("s-steps");
+  steps.style.display = "block";
+  steps.innerHTML = `<div><b>MDC(${num}, ${den}) = ${g}</b></div>` +
+    lines.map(l=>`<div>${l}</div>`).join("");
+
+  document.getElementById("s-compare").style.display = "flex";
+  buildStrip(document.getElementById("s-strip-orig"), den, num);
+  document.getElementById("s-label-orig").textContent = `${num}/${den}`;
+  buildStrip(document.getElementById("s-strip-simpl"), finalD, finalN);
+  document.getElementById("s-label-simpl").textContent = `${finalN}/${finalD}`;
+}
+
+document.getElementById("s-go").addEventListener("click", ()=>{
+  const n = parseInt(document.getElementById("s-num").value,10);
+  const d = parseInt(document.getElementById("s-den").value,10);
+  if(!n || !d || n<1 || d<1){ alert("Digite um numerador e denominador válidos."); return; }
+  renderSimplify(n,d);
+});
+
+document.getElementById("s-random").addEventListener("click", ()=>{
+  let n, d, g;
+  do{
+    d = randInt(4,36);
+    n = randInt(2,d-1);
+    g = gcd(n,d);
+  } while(g===1);
+  document.getElementById("s-num").value = n;
+  document.getElementById("s-den").value = d;
+  renderSimplify(n,d);
+});
+
+renderSimplify(8,12);
+
+/* ---- desafio tab 3 ---- */
+let sState = { correct:0, total:0, current:null };
+
+function newSimplifyChallenge(){
+  let n, d, g;
+  do{
+    d = randInt(4,40);
+    n = randInt(2,d-1);
+    g = gcd(n,d);
+  } while(g===1);
+  sState.current = {n,d};
+  document.getElementById("s-challenge-text").textContent = `Simplifique: ${n}/${d}`;
+  document.getElementById("s-c-num").value = "";
+  document.getElementById("s-c-den").value = "";
+  document.getElementById("s-c-feedback").className = "feedback";
+  document.getElementById("s-c-feedback").textContent = "";
+}
+document.getElementById("s-new-challenge").addEventListener("click", newSimplifyChallenge);
+newSimplifyChallenge();
+
+document.getElementById("s-c-check").addEventListener("click", ()=>{
+  const c = sState.current;
+  if(!c) return;
+  const g = gcd(c.n, c.d);
+  const correctN = c.n/g, correctD = c.d/g;
+  const givenN = parseInt(document.getElementById("s-c-num").value,10);
+  const givenD = parseInt(document.getElementById("s-c-den").value,10);
+  sState.total++;
+  const fb = document.getElementById("s-c-feedback");
+  if(givenN === correctN && givenD === correctD){
+    sState.correct++;
+    fb.className = "feedback ok";
+    fb.textContent = `${pick(OK_MSGS)} ${c.n}/${c.d} simplifica para ${correctN}/${correctD}.`;
+  } else {
+    fb.className = "feedback bad";
+    fb.textContent = `${pick(BAD_MSGS)} A fração irredutível é ${correctN}/${correctD}.`;
+  }
+  document.getElementById("s-score").textContent = `Acertos: ${sState.correct} / ${sState.total}`;
+});
+</script>
+</body>
+</html>
