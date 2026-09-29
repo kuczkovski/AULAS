@@ -6,12 +6,14 @@ on:
       - "treino-full-body/**"
       - ".github/workflows/treino-full-body.yml"
       - ".github/pages/**"
+      - "vercel.json"
   push:
     paths:
       - "treino-full-body/**"
       - "fracoes/**"
       - ".github/workflows/treino-full-body.yml"
       - ".github/pages/**"
+      - "vercel.json"
   workflow_dispatch:
 
 permissions:
@@ -29,8 +31,6 @@ jobs:
       run:
         working-directory: treino-full-body
     env:
-      # Publicado em https://<usuário>.github.io/<repositório>/treino/
-      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}/treino
       # Opcional: defina em Settings → Secrets and variables → Actions → Variables
       NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -44,15 +44,11 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run typecheck
-      - run: npm run build
       - name: Montar o site (aulas + app)
         working-directory: .
-        run: |
-          mkdir -p _site
-          cp .github/pages/index.html _site/index.html
-          cp -r fracoes _site/fracoes
-          cp -r treino-full-body/out _site/treino
-          touch _site/.nojekyll
+        env:
+          SITE_PREFIX: /${{ github.event.repository.name }}
+        run: bash .github/pages/build-site.sh
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
         with:

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci --prefix treino-full-body",
+  "buildCommand": "bash .github/pages/build-site.sh",
+  "outputDirectory": "_site",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/treino/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" },
+        { "key": "Service-Worker-Allowed", "value": "/treino/" }
+      ]
+    },
+    {
+      "source": "/treino/manifest.webmanifest",
+      "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
+    }
+  ]
+}
