@@ -110,6 +110,12 @@ O workflow `.github/workflows/treino-full-body.yml` roda testes, verificação d
 
 Configuração, feita uma única vez: em **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**. Depois disso, cada merge na branch padrão publica sozinho. Para publicar sem novo commit, use **Actions → Treino Full Body → Run workflow**.
 
+### Publicação na Vercel
+
+O `vercel.json` na raiz do repositório configura o projeto da Vercel: sem framework na raiz, com instalação e build do app e saída em `_site/`, que junta a página inicial, as frações e o app em `/treino/`. Assim, a URL de produção (por exemplo, `https://aulas-ten-tan.vercel.app/treino/`) e as prévias de cada PR funcionam sem ajustes no painel. Para conta e sincronização, cadastre `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` em **Project → Settings → Environment Variables** e adicione a URL `https://SEU-PROJETO.vercel.app/treino/perfil/` no Supabase.
+
+O mesmo site pode ser montado localmente com `bash .github/pages/build-site.sh`. Use a variável `SITE_PREFIX` quando o site não estiver na raiz do domínio (por exemplo, `SITE_PREFIX=/AULAS` no GitHub Pages).
+
 Para publicar em outro subcaminho ou hospedagem, defina `NEXT_PUBLIC_BASE_PATH` no build (por exemplo, `NEXT_PUBLIC_BASE_PATH=/treino npm run build`). Deixe vazio para publicar na raiz do domínio.
 
 ### Supabase (opcional)
