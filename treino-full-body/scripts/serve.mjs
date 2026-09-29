@@ -6,6 +6,7 @@ import { extname, join, normalize } from "node:path";
 
 const ROOT = "out";
 const PORT = Number(process.env.PORT ?? 3000);
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -38,7 +39,11 @@ async function resolve(pathname) {
 
 createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", "http://localhost");
-  const file = await resolve(url.pathname);
+  if (BASE && !url.pathname.startsWith(BASE)) {
+    res.writeHead(302, { Location: BASE + "/" }).end();
+    return;
+  }
+  const file = await resolve(url.pathname.slice(BASE.length) || "/");
   if (file === null) {
     res.writeHead(308, { Location: url.pathname + "/" + url.search }).end();
     return;
@@ -50,4 +55,4 @@ createServer(async (req, res) => {
   const headers = { "Content-Type": TYPES[extname(file)] ?? "application/octet-stream" };
   if (file.endsWith("sw.js")) headers["Cache-Control"] = "no-cache";
   res.writeHead(200, headers).end(await readFile(file));
-}).listen(PORT, () => console.log(`Servindo ${ROOT}/ em http://localhost:${PORT}`));
+}).listen(PORT, () => console.log(`Servindo ${ROOT}/ em http://localhost:${PORT}${BASE}/`));

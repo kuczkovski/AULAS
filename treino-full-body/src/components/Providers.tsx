@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { withBase } from "@/lib/base-path";
 import { ensureSeeded, onLocalWrite } from "@/lib/repo";
 import { getSupabase, supabaseConfigured } from "@/lib/supabase";
 import { refreshPending, setSyncStatus, syncNow } from "@/lib/sync";
@@ -65,7 +66,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     };
     navigator.serviceWorker.addEventListener("controllerchange", onController);
     navigator.serviceWorker
-      .register("/sw.js")
+      .register(withBase("/sw.js"))
       .then((reg) => {
         const check = () => {
           if (reg.waiting && navigator.serviceWorker.controller) setWaiting(reg.waiting);

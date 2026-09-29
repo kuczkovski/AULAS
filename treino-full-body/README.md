@@ -101,12 +101,23 @@ npm run typecheck    # verificação de tipos
 npm run icons        # regenera os ícones PNG do PWA
 ```
 
+### Publicação no GitHub Pages (automática)
+
+O workflow `.github/workflows/treino-full-body.yml` roda testes, verificação de tipos e build em cada pull request. A cada push na `main`, ele publica o site em:
+
+- `https://kuczkovski.github.io/AULAS/treino/` — este app
+- `https://kuczkovski.github.io/AULAS/fracoes/` — a ferramenta de frações, que continua disponível
+
+Configuração, feita uma única vez: em **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**. Depois disso, cada merge na `main` publica sozinho. Para publicar sem novo commit, use **Actions → Treino Full Body → Run workflow**.
+
+Para publicar em outro subcaminho ou hospedagem, defina `NEXT_PUBLIC_BASE_PATH` no build (por exemplo, `NEXT_PUBLIC_BASE_PATH=/treino npm run build`). Deixe vazio para publicar na raiz do domínio.
+
 ### Supabase (opcional)
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
 2. No **SQL Editor**, execute `supabase/migrations/0001_init.sql`. O script é idempotente e pode ser executado novamente. Com a Supabase CLI, também funciona `supabase db push`.
 3. Em **Authentication → URL Configuration**, defina a *Site URL* e adicione `https://SEU-DOMINIO/perfil/` (e `http://localhost:3000/perfil/` para testes) em *Redirect URLs*. Isso é necessário para o link de acesso por e-mail e para a confirmação de cadastro.
-4. Copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (em **Project Settings → API**). As variáveis são incorporadas no build, então rode `npm run build` novamente depois de alterá-las.
+4. Copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (em **Project Settings → API**). As variáveis são incorporadas no build, então rode `npm run build` novamente depois de alterá-las. Para a versão publicada no GitHub Pages, cadastre os mesmos nomes em **Settings → Secrets and variables → Actions → Variables** (a chave *anon* é pública por natureza; os dados continuam protegidos pelo RLS). A URL de retorno do login no Pages é `https://kuczkovski.github.io/AULAS/treino/perfil/`.
 5. No app, abra **Perfil**, crie uma conta ou entre. Os dados que já estão no aparelho são vinculados à conta e enviados.
 
 Se um aparelho tiver dados de outra conta, a sincronização é bloqueada para evitar mistura. O Perfil oferece exportar o backup ou apagar os dados locais.

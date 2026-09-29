@@ -4,6 +4,7 @@
    e são sincronizados pelo próprio app quando houver conexão. */
 const VERSION = "__VERSION__";
 const CACHE = `treino-${VERSION}`;
+const BASE = "__BASE__";
 const PRECACHE = __PRECACHE__;
 
 self.addEventListener("install", (event) => {
@@ -58,7 +59,7 @@ self.addEventListener("fetch", (event) => {
         try {
           return await fetch(req);
         } catch {
-          return (await cache.match("/")) || Response.error();
+          return (await cache.match(BASE + "/")) || Response.error();
         }
       })(),
     );

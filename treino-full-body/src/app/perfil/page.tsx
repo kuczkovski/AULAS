@@ -9,6 +9,7 @@ import { Badge, Button, Card, Field, Page, PageHeader, Segmented, Sheet, TextInp
 import { useProfile, useSyncStatus } from "@/lib/hooks";
 import { clearLocalData, exportBackup, importBackup, saveProfile } from "@/lib/repo";
 import { getSupabase } from "@/lib/supabase";
+import { withBase } from "@/lib/base-path";
 import { formatDate } from "@/lib/stats";
 import type { SyncState } from "@/lib/sync";
 import { firstError, parseDecimal, profileSchema } from "@/lib/validation";
@@ -233,7 +234,7 @@ function AccountCard() {
     if (!navigator.onLine) return setErr("Sem conexão. Conecte-se para entrar; seus registros continuam salvos no aparelho.");
     setBusy(true);
     try {
-      const redirect = `${location.origin}/perfil/`;
+      const redirect = `${location.origin}${withBase("/perfil/")}`;
       const res =
         kind === "signin"
           ? await client.auth.signInWithPassword({ email: email.trim(), password })
