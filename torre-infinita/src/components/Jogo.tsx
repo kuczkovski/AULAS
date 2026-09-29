@@ -72,6 +72,7 @@ export function Jogo() {
     if ("erro" in r) return r.erro;
     const local = carregarSessao();
     const remoto = await carregarEstadoRemoto(r.aluno.alunoId);
+    if (remoto === "erro") return "rede";
     let e: EstadoAluno;
     if (local?.aluno?.alunoId === r.aluno.alunoId && (!remoto || local.atualizadoEm > remoto.em)) e = local.estado;
     else if (remoto) e = { ...novoEstado(r.aluno.ano), ...remoto.estado };
@@ -89,7 +90,11 @@ export function Jogo() {
 
   async function guardarPerfil(apelido: string, avatar: Avatar): Promise<string | null> {
     const s = sessao.current!;
-    if (s.modo === "nuvem" && !(await salvarPerfil(apelido, avatar))) return "Esse apelido não pode ser usado. Escolha outro.";
+    if (s.modo === "nuvem") {
+      const r = await salvarPerfil(apelido, avatar);
+      if (r === "apelido-invalido") return "Esse apelido não pode ser usado. Escolha outro.";
+      if (r === "rede") return "Não deu para salvar agora: sem conexão com o servidor. Tente de novo.";
+    }
     s.estado.apelido = apelido;
     s.estado.avatar = avatar;
     persistir();

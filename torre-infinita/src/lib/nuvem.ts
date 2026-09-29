@@ -41,19 +41,37 @@ export async function sairDaNuvem() {
   }
 }
 
-export async function carregarEstadoRemoto(alunoId: string): Promise<{ estado: EstadoAluno; em: number } | null> {
+/**
+ * Lê o progresso salvo. Devolve `null` só quando o aluno realmente não tem
+ * progresso; falha de rede vira "erro", para nunca tratar um erro como aluno
+ * novo (o próximo envio apagaria o progresso real).
+ */
+export async function carregarEstadoRemoto(alunoId: string): Promise<{ estado: EstadoAluno; em: number } | null | "erro"> {
   const sb = getSupabase();
   if (!sb) return null;
-  const { data } = await sb.from("estado_aluno").select("estado, atualizado_em").eq("aluno_id", alunoId).maybeSingle();
-  if (!data) return null;
-  return { estado: data.estado as EstadoAluno, em: Date.parse(data.atualizado_em) };
+  try {
+    const { data, error } = await sb.from("estado_aluno").select("estado, atualizado_em").eq("aluno_id", alunoId).maybeSingle();
+    if (error) return "erro";
+    if (!data) return null;
+    return { estado: data.estado as EstadoAluno, em: Date.parse(data.atualizado_em) };
+  } catch {
+    return "erro";
+  }
 }
 
-export async function salvarPerfil(apelido: string, avatar: Avatar): Promise<boolean> {
+export type ResultadoPerfil = "ok" | "apelido-invalido" | "rede";
+
+export async function salvarPerfil(apelido: string, avatar: Avatar): Promise<ResultadoPerfil> {
   const sb = getSupabase();
-  if (!sb) return true;
-  const { error } = await sb.rpc("aluno_atualizar_perfil", { p_apelido: apelido, p_avatar: avatar });
-  return !error;
+  if (!sb) return "ok";
+  try {
+    const { error } = await sb.rpc("aluno_atualizar_perfil", { p_apelido: apelido, p_avatar: avatar });
+    if (!error) return "ok";
+    // o banco recusa o apelido com uma exceção conhecida; qualquer outra falha é de conexão
+    return String(error.message).includes("apelido-invalido") ? "apelido-invalido" : "rede";
+  } catch {
+    return "rede";
+  }
 }
 
 /** Enfileira a rodada e tenta enviar tudo. Falhas de rede não interrompem o jogo. */
@@ -65,7 +83,8 @@ export async function sincronizar(alunoId: string, estado: EstadoAluno, rodada?:
     const fila = lerFila();
     const restantes: RodadaPendente[] = [];
     for (const r of fila) {
-      if (r.alunoId !== alunoId) continue;
+      // rodada de outro aluno neste computador: fica guardada até ele entrar de novo
+      if (r.alunoId !== alunoId) { restantes.push(r); continue; }
       const { error } = await sb.from("rodadas").insert({
         aluno_id: r.alunoId, tipo: r.tipo, andar: r.andar, acertos: r.acertos, total: r.total,
         pontos: r.pontos, duracao_s: r.duracaoS, falhou: r.falhou,

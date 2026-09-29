@@ -17,7 +17,7 @@ const ROTULO_ALERTA: Record<Alerta, string> = {
   parado: "parado há 7+ dias",
 };
 const COR_CELULA = (d: number | null, sit: string) =>
-  sit === "bloqueada" ? "bg-linha/60" : d === null ? "bg-marca-clara" : d < 0.35 ? "bg-erro" : d < 0.6 ? "bg-[#f5b400]" : d < 0.8 ? "bg-[#7bd389]" : "bg-ok";
+  sit === "bloqueada" ? "bg-linha" : d === null ? "border-2 border-dashed border-marca/40 bg-white" : d < 0.35 ? "bg-erro" : d < 0.6 ? "bg-[#f5b400]" : d < 0.8 ? "bg-[#7bd389]" : "bg-ok";
 
 const quando = (iso: string | null) => {
   if (!iso) return "—";
@@ -249,7 +249,7 @@ function Habilidades({ turma, alunos }: { turma: Turma; alunos: AlunoLinha[] }) 
     <section className="cartao overflow-x-auto p-5">
       <h2 className="text-xl font-black">Domínio por habilidade</h2>
       <p className="mb-3 mt-1 flex flex-wrap items-center gap-3 text-sm font-semibold text-suave">
-        {[["bg-erro", "frágil"], ["bg-[#f5b400]", "em treino"], ["bg-[#7bd389]", "consolidando"], ["bg-ok", "dominada"], ["bg-marca-clara", "sem dados"], ["bg-linha/60", "bloqueada"]].map(([c, r]) => (
+        {[["bg-erro", "frágil"], ["bg-[#f5b400]", "em treino"], ["bg-[#7bd389]", "consolidando"], ["bg-ok", "dominada"], ["border-2 border-dashed border-marca/40 bg-white", "sem dados"], ["bg-linha", "bloqueada"]].map(([c, r]) => (
           <span key={r} className="flex items-center gap-1.5"><span className={"inline-block size-4 rounded " + c} />{r}</span>
         ))}
       </p>
