@@ -12,10 +12,10 @@ em 24 habilidades que seguem a progressão do 6º ao 9º ano.
 
 | Antes | Agora |
 |---|---|
-| Só soma, subtração e tabuada até 12 | 24 habilidades: frações, inteiros, porcentagem, proporção, equações, potências, raízes, Pitágoras, estatística |
+| Só soma, subtração e tabuada até 12 | 30 habilidades: frações, inteiros, porcentagem, proporção, equações, potências, raízes, Pitágoras, estatística |
 | O conteúdo dependia do nível de XP | O conteúdo abre por **domínio**: uma habilidade só libera as seguintes quando o aluno a domina |
 | Começava do zero para todos | **Nivelamento** adaptativo de poucos minutos, com respostas digitadas |
-| Só múltipla escolha | Escolha, **digitar a resposta** (teclado na tela) e verdadeiro/falso |
+| Só múltipla escolha | Escolha, **digitar a resposta**, verdadeiro/falso, **ordenar**, **posicionar na reta numérica** e **encontre o erro** |
 | Explicação só no modo "Assistido" | **Dica e explicação para todos**; erro volta como reforço com números novos |
 | Cronômetro que chegava a 3 s | Sem cronômetro; rapidez só rende bônus, nunca punição |
 | Placar premiava tempo de jogo | Placar semanal com **teto diário**, meta coletiva da turma e apelidos moderados |
@@ -96,10 +96,35 @@ Crie um projeto novo apontando para este repositório com **Root Directory = `to
 Configure as duas variáveis do Supabase em *Settings → Environment Variables*. O `vercel.json` da raiz do repositório
 continua publicando as outras aulas; este app é um projeto separado.
 
+## Formatos de desafio
+
+| Formato | Como funciona | Exemplo |
+|---|---|---|
+| `escolha` | Marcar uma alternativa (atalhos 1 a 4) | Tabuada, porcentagem |
+| `digitar` | Teclado na tela, sem alternativas; só aparece depois que o aluno domina a categoria | Somas, equações |
+| `vf` | Verdadeiro ou falso | Divisibilidade |
+| `ordenar` | Tocar nos itens na ordem certa | Frações e decimais |
+| `reta` | Tocar (ou usar as setas) na reta numérica | Frações e inteiros na reta |
+| `escolha` + `linhas` | "Encontre o erro" numa resolução em linhas | Equação do 1º grau, ordem das operações |
+
+As habilidades com toque, leitura crítica e problemas do dia a dia (`formatos.ts`) ficam fora do nivelamento,
+que é só de respostas digitadas, e entram na prática quando os requisitos abrem. Formatos novos exigem também
+um componente em `PerguntaView` e uma regra em `resposta.ts`.
+
+## App instalável (PWA)
+
+- `src/app/manifest.ts` e ícones em `public/icons` (gerados por `scripts/gerar-icones.mjs`).
+- `public/sw.js`: páginas com rede primeiro e cópia para offline; arquivos com hash em cache; chamadas ao Supabase
+  não são interceptadas. O app guarda os arquivos carregados na primeira visita, então abre offline desde a primeira vez.
+- Offline, o aluno continua jogando: rodadas ficam numa fila local e são enviadas quando a internet volta.
+- Em "Ajustes" aparece **Instalar o app** (Chrome/Android) ou a instrução para iPhone/iPad.
+- O service worker só é registrado em produção (`next build && next start`), nunca em `next dev`.
+  Para publicar uma mudança que exija limpar cópias antigas, aumente `VERSAO` em `public/sw.js`.
+
 ## Próximas etapas
 
 - Painel do professor (`/professor`): login, criar turma, importar alunos e imprimir cartões, mapa de calor de habilidades,
   alunos travados e ausentes, meta semanal, exportação CSV.
-- PWA (instalável e offline) e ranking por evolução pessoal.
-- Mais formatos: reta numérica interativa, ordenar frações, encontre o erro, problemas com contexto.
+- Ranking por evolução pessoal.
+- Mais problemas com contexto (7º ao 9º ano) e arrastar-e-soltar.
 - Zonas temáticas com chefes próprios e mais itens de personagem.

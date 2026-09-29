@@ -27,7 +27,7 @@ export class Nivelamento {
     private e: EstadoAluno,
     private r: Rng = criarRng(),
   ) {
-    this.ordem = HABILIDADES.filter((h) => h.ano <= e.ano);
+    this.ordem = HABILIDADES.filter((h) => h.ano <= e.ano && h.nivelamento !== false);
     this.proximaHabilidade();
   }
 

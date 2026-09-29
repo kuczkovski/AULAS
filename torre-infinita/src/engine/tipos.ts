@@ -1,5 +1,5 @@
 export type Ano = 6 | 7 | 8 | 9;
-export type Formato = "escolha" | "digitar" | "vf";
+export type Formato = "escolha" | "digitar" | "vf" | "ordenar" | "reta";
 
 /** Modelo visual opcional exibido junto da pergunta ou da explicação. */
 export type Visual =
@@ -21,8 +21,15 @@ export interface Pergunta {
   resposta: string;
   /** Respostas equivalentes aceitas no formato "digitar". */
   aceitar?: string[];
-  /** Alternativas (formatos "escolha" e "vf"), já embaralhadas. */
+  /**
+   * Alternativas já embaralhadas. Em "escolha" e "vf" o aluno marca uma; em
+   * "ordenar" são os itens a colocar em ordem (a resposta os junta com "|").
+   */
   opcoes?: string[];
+  /** Linhas de uma resolução ("encontre o erro"), exibidas numeradas. */
+  linhas?: string[];
+  /** Formato "reta": o aluno toca na reta; vale a resposta dentro da tolerância. */
+  reta?: { min: number; max: number; passo: number; tolerancia: number };
   /** Pista que ensina o caminho sem entregar o número. */
   dica: string;
   /** Explicação mostrada depois de um erro. */
@@ -53,6 +60,8 @@ export interface Habilidade {
   zona: string;
   requisitos: string[];
   categorias: string[];
+  /** Falso para habilidades que só fazem sentido na prática (formatos com toque). */
+  nivelamento?: boolean;
   gerar(c: Contexto): CorpoPergunta;
 }
 

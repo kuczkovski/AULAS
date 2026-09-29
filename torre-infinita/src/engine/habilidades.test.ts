@@ -65,6 +65,22 @@ describe.each(HABILIDADES.map((h) => [h.id, h] as const))("%s", (_id, h) => {
 
         if (p.formato === "digitar") {
           expect(p.opcoes, ctx).toBeUndefined();
+        } else if (p.formato === "reta") {
+          expect(p.opcoes, ctx).toBeUndefined();
+          expect(p.reta, ctx).toBeDefined();
+          const { min, max, tolerancia } = p.reta!;
+          const alvo = Number(canonico(p.resposta));
+          expect(alvo, ctx).toBeGreaterThanOrEqual(min);
+          expect(alvo, ctx).toBeLessThanOrEqual(max);
+          expect(verificar(p, String(alvo + tolerancia * 0.9)), ctx).toBe(true);
+          expect(verificar(p, String(alvo + tolerancia * 1.5 + 0.01)), ctx).toBe(false);
+        } else if (p.formato === "ordenar") {
+          const o = p.opcoes!;
+          expect(o.length, ctx).toBeGreaterThanOrEqual(3);
+          expect(new Set(o).size, ctx).toBe(o.length);
+          expect([...o].sort(), ctx).toEqual(p.resposta.split("|").sort());
+          expect(o.join("|"), `já vem ordenada — ${ctx}`).not.toBe(p.resposta);
+          expect(verificar(p, o.join("|")), ctx).toBe(false);
         } else {
           const o = p.opcoes!;
           expect(o, ctx).toContain(p.resposta);
@@ -73,6 +89,10 @@ describe.each(HABILIDADES.map((h) => [h.id, h] as const))("%s", (_id, h) => {
           expect(o.length, ctx).toBeLessThanOrEqual(4);
           if (p.formato === "escolha" && h.id !== "fracao-comparar") expect(o.length, ctx).toBe(4);
           for (const a of p.aceitar ?? []) if (a !== p.resposta) expect(o, `outra resposta correta entre as opções — ${ctx}`).not.toContain(a);
+        }
+        if (p.linhas) {
+          expect(p.linhas.length, ctx).toBeGreaterThanOrEqual(3);
+          for (const l of p.linhas) expect(l, ctx).not.toMatch(/NaN|undefined|Infinity/);
         }
       }
     });
@@ -162,5 +182,43 @@ describe("verificação de respostas digitadas", () => {
     const q = { formato: "digitar", resposta: "2/3" } as Pergunta;
     expect(verificar(q, "2/3")).toBe(true);
     expect(verificar(q, "4/6")).toBe(false);
+  });
+});
+
+describe("formatos novos", () => {
+  const gerar = (id: string) => todas(POR_ID.get(id)!, false);
+
+  it("ordenar: a resposta está em ordem crescente de fato", () => {
+    for (const p of gerar("ordenar-racionais")) {
+      const valor = (t: string) => (t.includes("/") ? Number(t.split("/")[0]) / Number(t.split("/")[1]) : Number(t.replace(",", ".")));
+      const v = p.resposta.split("|").map(valor);
+      expect(v, p.resposta).toEqual([...v].sort((a, b) => a - b));
+      expect(new Set(v).size, "valores repetidos").toBe(v.length);
+    }
+  });
+
+  it("encontre o erro: a linha indicada é mesmo a primeira errada", () => {
+    for (const p of gerar("erro-equacao")) {
+      const [l1, l2, l3, l4] = p.linhas!;
+      const [, a, b, cc] = l1!.match(/^(\d+)x \+ (\d+) = (\d+)$/)!.map(Number) as [number, number, number, number];
+      const rhs = Number(l2!.split("= ")[1]!.replace(",", "."));
+      const op = l3!.includes("÷") ? "÷" : "×";
+      const val = Number(l3!.match(/= ([\d,]+) [÷×]/)![1]!.replace(",", "."));
+      const fim = Number(l4!.split("= ")[1]!.replace(",", "."));
+      const primeiroErro = rhs !== cc - b ? "Linha 2" : op !== "÷" || val !== rhs ? "Linha 3" : fim !== rhs / a ? "Linha 4" : "Nenhuma: está tudo certo";
+      expect(p.resposta, p.linhas!.join(" / ")).toBe(primeiroErro);
+    }
+  });
+
+  it("todo formato novo aparece nas rodadas de um aluno avançado", async () => {
+    const { novoEstado } = await import("./estado");
+    const { montarRodada } = await import("./selecao");
+    const e = novoEstado(7);
+    e.colocadas = HABILIDADES.map((h) => h.id);
+    const vistos = new Set<string>();
+    const r = criarRng(3);
+    for (let i = 0; i < 60; i++) for (const q of montarRodada(e, "treino", r)) vistos.add(q.formato);
+    // "digitar" só aparece depois que o aluno domina a categoria; sem histórico, nunca
+    for (const f of ["escolha", "vf", "ordenar", "reta"]) expect(vistos.has(f), f).toBe(true);
   });
 });

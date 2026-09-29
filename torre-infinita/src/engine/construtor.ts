@@ -62,3 +62,18 @@ export function verdadeiroFalso(d: Base & { verdadeiro: boolean }): CorpoPergunt
   const { verdadeiro, ...base } = d;
   return { ...base, formato: "vf", resposta: verdadeiro ? "Verdadeiro" : "Falso", opcoes: ["Verdadeiro", "Falso"] };
 }
+
+/** Colocar itens em ordem. `crescente` traz os itens já na ordem correta. */
+export function ordenar(c: Contexto, d: Base & { crescente: string[] }): CorpoPergunta {
+  const { crescente, ...base } = d;
+  let mistura = c.r.shuffle(crescente);
+  // evita entregar a resposta de graça
+  for (let t = 0; t < 10 && mistura.join("|") === crescente.join("|"); t++) mistura = c.r.shuffle(crescente);
+  return { ...base, formato: "ordenar", resposta: crescente.join("|"), opcoes: mistura };
+}
+
+/** Tocar na reta numérica: vale o ponto dentro da tolerância. */
+export function naReta(d: Base & { alvo: number; min: number; max: number; passo: number; tolerancia?: number }): CorpoPergunta {
+  const { alvo, min, max, passo, tolerancia, ...base } = d;
+  return { ...base, formato: "reta", resposta: num(alvo), reta: { min, max, passo, tolerancia: tolerancia ?? passo / 2 } };
+}

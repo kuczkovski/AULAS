@@ -59,6 +59,16 @@ export function Jogo() {
     if (s.modo === "nuvem" && s.aluno) void sincronizar(s.aluno.alunoId, s.estado);
   }, [destino]);
 
+  // Voltou a internet: envia o que ficou na fila.
+  useEffect(() => {
+    const enviar = () => {
+      const s = sessao.current;
+      if (s?.modo === "nuvem" && s.aluno) void sincronizar(s.aluno.alunoId, s.estado);
+    };
+    window.addEventListener("online", enviar);
+    return () => window.removeEventListener("online", enviar);
+  }, []);
+
   // Modo calmo: sem animações nem sons.
   const calmo = sessao.current?.estado.calmo ?? false;
   useEffect(() => {

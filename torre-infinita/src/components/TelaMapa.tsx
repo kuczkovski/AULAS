@@ -7,6 +7,7 @@ import { CONFIG_RODADA, nomeDoChefe, situacao, tipoDoAndar, type Situacao } from
 import type { EstadoAluno } from "@/engine/tipos";
 import { Avatar } from "./Avatar";
 import { PainelTurma } from "./PainelTurma";
+import { useInstalar } from "./Pwa";
 
 const DESCRICAO = {
   treino: "Desafios novos e o que ainda está fraco.",
@@ -51,6 +52,7 @@ export function TelaMapa({
   aoFecharAviso: () => void;
 }) {
   const [aberta, setAberta] = useState<string | null>(null);
+  const app = useInstalar();
   const tipo = tipoDoAndar(estado.andar);
   const necessario = xpNecessario(estado.nivel);
   const dias = sequenciaDeDias(estado.dias);
@@ -161,8 +163,10 @@ export function TelaMapa({
             <button type="button" className="btn btn-suave" onClick={() => aoAlternar("som")} aria-pressed={estado.som}>Som: {estado.som ? "ligado" : "desligado"}</button>
             <button type="button" className="btn btn-suave" onClick={() => aoAlternar("calmo")} aria-pressed={estado.calmo}>Modo calmo: {estado.calmo ? "ligado" : "desligado"}</button>
             <button type="button" className="btn btn-suave" onClick={aoPerfil}>Trocar personagem</button>
+            {app.podeInstalar && <button type="button" className="btn btn-marca" onClick={() => void app.instalar()}>Instalar o app</button>}
             <button type="button" className="btn btn-fantasma" onClick={aoSair}>Sair</button>
           </div>
+          {app.ios && <p className="mt-3 text-sm font-semibold text-suave">Para instalar no iPhone ou iPad: toque em Compartilhar e depois em “Adicionar à Tela de Início”.</p>}
         </details>
       </div>
 

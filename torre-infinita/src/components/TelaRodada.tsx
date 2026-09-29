@@ -130,7 +130,11 @@ export function TelaRodada({
         {res && !res.ok && (
           <div role="status" className="anim-entra mt-6 rounded-2xl bg-erro-fundo p-4 text-left">
             <p className="text-lg font-black text-erro">
-              Ainda não. A resposta é <span className="text-xl">{sinal(p.resposta)}</span>
+              {p.formato === "ordenar" || p.formato === "reta" ? (
+                "Ainda não."
+              ) : (
+                <>Ainda não. A resposta é <span className="text-xl">{sinal(p.resposta)}</span></>
+              )}
             </p>
             <p className="mt-2 text-base font-semibold text-tinta">{sinal(p.explicacao)}</p>
             {p.visual && <div className="mt-3"><Visual v={p.visual} /></div>}

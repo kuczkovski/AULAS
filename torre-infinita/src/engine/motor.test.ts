@@ -98,14 +98,14 @@ describe("nivelamento", () => {
 
   it("aluno do 9º que domina tudo é colocado em todas as habilidades", () => {
     const { e } = rodarNivelamento(9, () => true);
-    expect(e.colocadas.length).toBe(HABILIDADES.length);
+    expect(e.colocadas.length).toBe(HABILIDADES.filter((h) => h.nivelamento !== false).length);
     expect(e.nivelamentoFeito).toBe(true);
   });
 
   it("aluno do 9º que só sabe até o 7º ano não é colocado no 8º e 9º", () => {
     const { e } = rodarNivelamento(9, conhece(7));
     const colocadas = new Set(e.colocadas);
-    for (const h of HABILIDADES) expect(colocadas.has(h.id), h.id).toBe(h.ano <= 7);
+    for (const h of HABILIDADES.filter((x) => x.nivelamento !== false)) expect(colocadas.has(h.id), h.id).toBe(h.ano <= 7);
   });
 
   it("aluno que erra tudo termina cedo e sem habilidades colocadas", () => {
@@ -203,7 +203,7 @@ describe("rodada", () => {
     const r = new Rodada(e, "treino", criarRng(6));
     const q = r.atual()!;
     const g = r.responder(q.resposta, 99999, false).ganhos;
-    expect(g).toBe(q.formato === "digitar" ? 16 : 11);
+    expect(g).toBe(q.formato === "escolha" || q.formato === "vf" ? 11 : 16);
   });
 });
 

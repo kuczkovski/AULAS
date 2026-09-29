@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import type { Pergunta } from "@/engine/tipos";
 import { sinal } from "@/lib/formato";
+import { Ordenar } from "./Ordenar";
+import { RetaInterativa } from "./RetaInterativa";
 import { Teclado } from "./Teclado";
 import { Visual } from "./Visual";
 
@@ -29,7 +31,8 @@ export function PerguntaView({
   const travada = feedback !== null;
 
   useEffect(() => {
-    if (p.formato === "digitar" || travada) return;
+    if (p.formato !== "escolha" && p.formato !== "vf") return;
+    if (travada) return;
     const h = (e: KeyboardEvent) => {
       const i = "1234".indexOf(e.key);
       const op = i >= 0 ? p.opcoes?.[i] : undefined;
@@ -57,8 +60,20 @@ export function PerguntaView({
         </p>
       )}
 
+      {p.linhas && (
+        <ol className="mx-auto my-4 max-w-md list-none rounded-2xl bg-fundo/70 p-4 font-mono text-xl font-bold" aria-label="Resolução">
+          {p.linhas.map((l, i) => (
+            <li key={i} className="flex gap-3 py-0.5"><span className="w-16 shrink-0 font-sans text-sm font-black text-suave">Linha {i + 1}</span><span>{sinal(l)}</span></li>
+          ))}
+        </ol>
+      )}
+
       <div className="mt-6">
-        {p.formato === "digitar" ? (
+        {p.formato === "ordenar" ? (
+          <Ordenar itens={p.opcoes!} resposta={p.resposta} escolhida={feedback?.escolhida} onConfirmar={onResponder} />
+        ) : p.formato === "reta" ? (
+          <RetaInterativa reta={p.reta!} alvo={Number(p.resposta.replace(",", "."))} escolhida={feedback ? Number(feedback.escolhida) : undefined} onConfirmar={(v) => onResponder(String(v))} />
+        ) : p.formato === "digitar" ? (
           <Teclado
             valor={valor}
             onChange={setValor}
@@ -77,7 +92,7 @@ export function PerguntaView({
                   disabled={travada}
                   onClick={() => onResponder(o)}
                   className={
-                    "btn relative min-h-20 border-2 text-3xl " +
+                    "btn relative min-h-20 border-2 " + (p.linhas ? "text-xl " : "text-3xl ") +
                     (certa
                       ? "border-ok bg-ok-fundo text-ok"
                       : errada

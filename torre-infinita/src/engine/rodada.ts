@@ -94,7 +94,8 @@ export class Rodada {
         this.acertos++;
         this.marcas[this.marcaIndice()] = 1;
         rapido = dtMs < p.esperadoMs * 0.6 && !usouDica;
-        const base = p.formato === "digitar" ? 15 : 10;
+        // responder sem alternativas à vista vale mais que marcar
+        const base = p.formato === "escolha" || p.formato === "vf" ? 10 : 15;
         const combo = Math.min(2, 1 + this.sequencia * 0.1);
         ganhos = Math.round(base * combo * (rapido ? 1.5 : 1) * (usouDica && !this.guiada ? 0.5 : 1) * CONFIG_RODADA[this.tipo].mult);
         this.pontos += ganhos;
