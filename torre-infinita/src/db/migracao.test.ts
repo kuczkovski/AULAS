@@ -21,7 +21,8 @@ describe("migração do Supabase", () => {
     create role authenticated; create role anon;
     grant usage on schema public, auth to authenticated;
   `);
-  await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/0001_init.sql", import.meta.url)), "utf8"));
+  for (const arq of ["0001_init.sql", "0002_endurecer_funcoes.sql", "0003_placar_evolucao.sql"])
+      await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/" + arq, import.meta.url)), "utf8"));
   await db.exec(`grant select, insert, update, delete on all tables in schema public to authenticated;`);
 
   const PROF = "11111111-1111-1111-1111-111111111111";
@@ -127,5 +128,70 @@ describe("migração do Supabase", () => {
   expect(falhas).toEqual([]);
   expect(ok).toBeGreaterThanOrEqual(27);
 
+  }, 60_000);
+});
+
+describe("placar por evolução pessoal", () => {
+  it("compara cada aluno com o próprio histórico e esconde o detalhe dos outros", async () => {
+    const db = new PGlite({ extensions: { pgcrypto } });
+    await db.exec(`
+      create schema auth; create schema extensions;
+      create table auth.users(id uuid primary key);
+      create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.sub', true),'')::uuid $$;
+      create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true),''),'{}')::jsonb $$;
+      create role authenticated; create role anon;
+      grant usage on schema public, auth to authenticated;
+    `);
+    for (const arq of ["0001_init.sql", "0002_endurecer_funcoes.sql", "0003_placar_evolucao.sql"])
+      await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/" + arq, import.meta.url)), "utf8"));
+    await db.exec(`grant select, insert, update, delete on all tables in schema public to authenticated;`);
+
+    const PROF = "11111111-1111-1111-1111-111111111111", SA = "22222222-2222-2222-2222-222222222222", SB = "33333333-3333-3333-3333-333333333333";
+    await db.exec(`insert into auth.users values ('${PROF}'),('${SA}'),('${SB}')`);
+    const [{ id: turma }] = (await db.query<any>(`insert into turmas (professor_id, nome, ano) values ('${PROF}','7A',7) returning id`)).rows;
+    await db.exec(`
+      insert into alunos (turma_id, codigo, nome, pin_hash, apelido, auth_uid) values
+        ('${turma}', 'aaa', 'Ana', 'x', 'Ana', '${SA}'),
+        ('${turma}', 'bbb', 'Bia', 'x', 'Bia', '${SB}');
+    `);
+    const ids = Object.fromEntries((await db.query<any>(`select codigo, id from alunos`)).rows.map((r) => [r.codigo, r.id]));
+
+    // O gatilho fixa semana e data; para simular o passado ele é desligado só nesta carga.
+    await db.exec(`alter table rodadas disable trigger rodadas_preencher`);
+    const w = (dias: number) => `(date_trunc('week', now() at time zone 'America/Cuiaba') - interval '${dias} days')::date`;
+    const ins = (aluno: string, semana: string, dia: string, pontos: number, acertos: number, total: number) =>
+      `insert into rodadas (aluno_id, turma_id, tipo, acertos, total, pontos, semana, criada_em) values ('${aluno}', '${turma}', 'treino', ${acertos}, ${total}, ${pontos}, ${semana}, ${dia})`;
+    const sql: string[] = [];
+    // Ana: 4 semanas anteriores com 1000 pontos e 60% de acerto
+    for (let k = 1; k <= 4; k++) sql.push(ins(ids.aaa, w(7 * k), `now() - interval '${7 * k + 1} days'`, 1000, 6, 10));
+    // esta semana: 4 dias, 300 pontos por dia, 75% de acerto  => 1200 pontos
+    for (let d = 0; d < 4; d++) sql.push(ins(ids.aaa, w(0), `now() - interval '${d} minutes' - interval '${d} days'`, 300, 3, 4));
+    // Bia: sem histórico; um dia só com 3000 pontos (teto de 2000) e 90% de acerto
+    sql.push(ins(ids.bbb, w(0), `now()`, 1500, 18, 20), ins(ids.bbb, w(0), `now()`, 1500, 18, 20));
+    await db.exec(sql.join(";\n"));
+    await db.exec(`alter table rodadas enable trigger rodadas_preencher`);
+
+    const como = async <T,>(uid: string, fn: () => Promise<T>): Promise<T> => {
+      await db.exec(`select set_config('request.jwt.sub','${uid}',false), set_config('request.jwt.claims','{"is_anonymous":${uid !== PROF}}',false); set role authenticated;`);
+      try { return await fn(); } finally { await db.exec("reset role;"); }
+    };
+
+    const doAna = await como(SA, async () => (await db.query<any>(`select * from placar_evolucao()`)).rows);
+    const ana = doAna.find((l) => l.eu)!;
+    // esforço: 1200/1000 = 120% => 1,2/1,5*50 = 40; precisão: (0,75-0,60)*2+0,5 = 0,8 => 16; constância: 4 dias => 24
+    expect(ana).toMatchObject({ apelido: "Ana", score: 80, esforco_pct: 120, acerto_delta: 15, dias: 4 });
+    const bia = doAna.find((l) => !l.eu)!;
+    // detalhe da colega não aparece para a Ana
+    expect(bia).toMatchObject({ apelido: "Bia", esforco_pct: null, acerto_delta: null, dias: null });
+    // Bia: 2000 (teto do dia) / 300 (referência) limitado a 150% => 50; sem histórico: 0,9*20 = 18; 1 dia => 6
+    expect(bia.score).toBe(74);
+    expect(doAna.map((l) => l.apelido)).toEqual(["Ana", "Bia"]);
+    expect(Object.keys(bia)).not.toContain("codigo");
+
+    const doProf = await como(PROF, async () => (await db.query<any>(`select * from professor_evolucao('${turma}')`)).rows);
+    expect(doProf.find((r) => r.aluno_id === ids.bbb)).toMatchObject({ score: 74, dias: 1 });
+    // aluno não pode chamar a função do professor, nem a interna
+    await expect(como(SA, () => db.query(`select * from professor_evolucao('${turma}')`))).rejects.toThrow();
+    await expect(como(SA, () => db.query(`select * from evolucao_calc('${turma}')`))).rejects.toThrow();
   }, 60_000);
 });

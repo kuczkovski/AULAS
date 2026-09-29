@@ -222,7 +222,7 @@ function Geral({ turma, alunos, aoMeta }: { turma: Turma; alunos: AlunoLinha[]; 
       <section className="cartao overflow-x-auto p-5 lg:col-span-2">
         <h2 className="mb-3 text-xl font-black">Alunos</h2>
         <table className="w-full min-w-[40rem] text-left">
-          <thead><tr className="rotulo"><th className="py-2">Aluno</th><th>Nível</th><th>Andar</th><th>Acerto</th><th>Pontos (semana)</th><th>Minutos</th><th>Última vez</th></tr></thead>
+          <thead><tr className="rotulo"><th className="py-2">Aluno</th><th>Nível</th><th>Andar</th><th>Acerto</th><th>Evolução</th><th>Pontos (semana)</th><th>Minutos</th><th>Última vez</th></tr></thead>
           <tbody>
             {[...alunos].sort((a, b) => b.pontosSemana - a.pontosSemana).map((a) => (
               <tr key={a.id} className="border-t-2 border-linha">
@@ -230,12 +230,13 @@ function Geral({ turma, alunos, aoMeta }: { turma: Turma; alunos: AlunoLinha[]; 
                 <td>{a.estado?.nivel ?? "—"}</td>
                 <td>{a.estado?.andar ?? "—"}</td>
                 <td>{a.estado?.respondidas ? `${Math.round((a.estado.acertos / a.estado.respondidas) * 100)}%` : "—"}</td>
+                <td className="font-black text-marca">{a.evolucao ?? "—"}</td>
                 <td className="font-black text-ouro">{pt(a.pontosSemana)}</td>
                 <td>{a.minutosSemana}</td>
                 <td className="text-sm text-suave">{quando(a.ultima ?? a.atualizadoEm)}</td>
               </tr>
             ))}
-            {alunos.length === 0 && <tr><td colSpan={7} className="py-4 text-suave">Nenhum aluno ainda. Importe a lista na aba “Alunos e PINs”.</td></tr>}
+            {alunos.length === 0 && <tr><td colSpan={8} className="py-4 text-suave">Nenhum aluno ainda. Importe a lista na aba “Alunos e PINs”.</td></tr>}
           </tbody>
         </table>
       </section>

@@ -112,12 +112,26 @@ export interface MetaTurma {
   ativos: number;
 }
 
-export async function carregarPlacar(): Promise<{ placar: LinhaPlacar[]; meta: MetaTurma | null }> {
+export interface LinhaEvolucao {
+  apelido: string;
+  avatar: Partial<Avatar>;
+  nivel: number;
+  /** Nota de 0 a 100 da semana. */
+  score: number;
+  eu: boolean;
+  /** Detalhe da nota: só vem preenchido na linha do próprio aluno. */
+  esforco_pct: number | null;
+  acerto_delta: number | null;
+  dias: number | null;
+}
+
+export async function carregarPlacar(): Promise<{ placar: LinhaPlacar[]; meta: MetaTurma | null; evolucao: LinhaEvolucao[] }> {
   const sb = getSupabase();
-  if (!sb) return { placar: [], meta: null };
-  const [p, m] = await Promise.all([sb.rpc("placar_turma"), sb.rpc("meta_turma")]);
+  if (!sb) return { placar: [], meta: null, evolucao: [] };
+  const [p, m, e] = await Promise.all([sb.rpc("placar_turma"), sb.rpc("meta_turma"), sb.rpc("placar_evolucao")]);
   return {
     placar: ((p.data ?? []) as LinhaPlacar[]).map((l) => ({ ...l, pontos: Number(l.pontos) })),
     meta: (m.data as MetaTurma | null) ?? null,
+    evolucao: (e.data ?? []) as LinhaEvolucao[],
   };
 }

@@ -17,6 +17,8 @@ export interface AlunoLinha {
   estado: EstadoAluno | null;
   atualizadoEm: string | null;
   pontosSemana: number;
+  /** Nota de evolução da semana (0 a 100), ou null se ainda não jogou. */
+  evolucao: number | null;
   minutosSemana: number;
   rodadasSemana: number;
   ultima: string | null;
@@ -101,10 +103,12 @@ export async function carregarTurma(turmaId: string): Promise<AlunoLinha[]> {
   const alunos = await c.from("alunos").select("id, codigo, nome, apelido").eq("turma_id", turmaId).order("nome");
   if (alunos.error) throw alunos.error;
   const ids = (alunos.data ?? []).map((a) => a.id as string);
-  const [estados, resumo] = await Promise.all([
+  const [estados, resumo, evo] = await Promise.all([
     ids.length ? c.from("estado_aluno").select("aluno_id, estado, atualizado_em").in("aluno_id", ids) : Promise.resolve({ data: [] }),
     c.from("resumo_semanal").select("aluno_id, pontos, minutos, rodadas, ultima").eq("turma_id", turmaId).eq("semana", semana),
+    c.rpc("professor_evolucao", { p_turma: turmaId }),
   ]);
+  const notas = new Map(((evo.data ?? []) as { aluno_id: string; score: number }[]).map((x) => [x.aluno_id, x.score]));
   const est = new Map((estados.data ?? []).map((e) => [e.aluno_id as string, e]));
   const res = new Map((resumo.data ?? []).map((r) => [r.aluno_id as string, r]));
   return (alunos.data ?? []).map((a) => {
@@ -117,6 +121,7 @@ export async function carregarTurma(turmaId: string): Promise<AlunoLinha[]> {
       estado: (e?.estado as EstadoAluno | undefined) ?? null,
       atualizadoEm: (e?.atualizado_em as string | undefined) ?? null,
       pontosSemana: Number(r?.pontos ?? 0),
+      evolucao: notas.get(a.id as string) ?? null,
       minutosSemana: Number(r?.minutos ?? 0),
       rodadasSemana: Number(r?.rodadas ?? 0),
       ultima: (r?.ultima as string | undefined) ?? null,
