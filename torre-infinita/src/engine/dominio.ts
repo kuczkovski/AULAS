@@ -27,7 +27,8 @@ export function acertoRecente(f: Fato): number | null {
 }
 
 /**
- * Domínio de 0 a 1: acerto recente pesa 80%, rapidez 20%. Com poucas
+ * Domínio de 0 a 1: acerto recente pesa 80% e rapidez até 20%, mas a rapidez só
+ * conta na proporção do acerto (errar depressa não é dominar). Com poucas
  * observações a estimativa é puxada para 0,5, para que um acerto de sorte
  * não marque a categoria como dominada.
  */
@@ -38,7 +39,7 @@ export function dominio(f: Fato | undefined, esperadoMs = 6000): number {
   const ajustado = (acc * f.hn + 0.5 * k) / (f.hn + k);
   const media = f.n ? f.sumT / f.n : esperadoMs * 2;
   const vel = Math.max(0, Math.min(1, 1 - (media - esperadoMs) / (2 * esperadoMs)));
-  return Math.max(0, Math.min(1, ajustado * 0.8 + vel * 0.2));
+  return Math.max(0, Math.min(1, ajustado * 0.8 + vel * 0.2 * ajustado));
 }
 
 /** Peso de sorteio de uma categoria: frágil e vencida voltam mais. */

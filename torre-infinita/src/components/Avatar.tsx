@@ -1,5 +1,5 @@
 import type { Avatar as AvatarDados } from "@/engine/tipos";
-import { ZONAS, infoZona } from "@/engine/zonas";
+import { ORDEM_ZONAS, infoZona } from "@/engine/zonas";
 
 export const CORES = ["#5b3df5", "#e08a00", "#12a150", "#e5487a", "#0d8fd1", "#e2571b"];
 export const FORMAS = ["Redondo", "Gotinha", "Cristal", "Quadradão"];
@@ -30,7 +30,7 @@ export const ACESSORIOS: Acessorio[] = [
   { nome: "Óculos", nivel: 3 },
   { nome: "Boné", nivel: 6 },
   { nome: "Coroa", nivel: 10 },
-  ...Object.keys(ZONAS).map((zona) => ({ nome: NOMES_ZONA[zona] ?? `Troféu de ${zona}`, zona })),
+  ...ORDEM_ZONAS.map((zona) => ({ nome: NOMES_ZONA[zona] ?? `Troféu de ${zona}`, zona })),
 ];
 
 export const acessorioLiberado = (a: Acessorio, nivel: number, chefes: readonly string[]) =>

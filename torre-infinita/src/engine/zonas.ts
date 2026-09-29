@@ -67,3 +67,10 @@ export const ZONAS: Record<string, InfoZona> = {
 };
 
 export const infoZona = (zona: string): InfoZona => ZONAS[zona] ?? ZONAS["Fundação"]!;
+
+/**
+ * Ordem das zonas na torre e nos acessórios de troféu. O avatar guarda o
+ * acessório como um número que depende desta ordem: acrescente zonas só no
+ * final e nunca reordene (o teste trava a lista).
+ */
+export const ORDEM_ZONAS = ["Fundação", "Números", "Frações", "Inteiros", "Proporção", "Álgebra", "Potências", "Geometria", "Dados", "Problemas"] as const;

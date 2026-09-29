@@ -5,6 +5,7 @@ import { novoEstado, aplicarXp, xpNecessario, sequenciaDeDias, hojeISO } from ".
 import { Nivelamento } from "./nivelamento";
 import { Rodada } from "./rodada";
 import { consolidada, dominio, registrar } from "./dominio";
+import { assinaturaDe } from "./gerar";
 import { desbloqueadas, montarRodada, situacao, tipoDoAndar } from "./selecao";
 import type { Ano, EstadoAluno, Pergunta } from "./tipos";
 
@@ -14,6 +15,11 @@ function errada(p: Pergunta): string {
 }
 
 describe("modelo de domínio", () => {
+  it("errar rápido não conta como domínio", () => {
+    const f = { seen: 0, wrong: 0, n: 0, sumT: 0, h: 0, hn: 0, rec: 0, last: -99 };
+    for (let i = 0; i < 8; i++) registrar(f, i % 10 < 3, 1500, i); // 30% de acerto, sempre rápido
+    expect(dominio(f, 4000)).toBeLessThan(0.45);
+  });
   it("um acerto de sorte não marca como dominado", () => {
     const f = { seen: 0, wrong: 0, n: 0, sumT: 0, h: 0, hn: 0, rec: 0, last: -99 };
     registrar(f, true, 2000, 1);
@@ -158,7 +164,7 @@ describe("rodada", () => {
     e.colocadas = HABILIDADES.map((h) => h.id);
     for (const tipo of ["treino", "revisao", "chefe"] as const) {
       const qs = montarRodada(e, tipo, criarRng(5));
-      const assin = qs.map((q) => q.enunciado + "|" + q.expr);
+      const assin = qs.map(assinaturaDe);
       expect(new Set(assin).size).toBeGreaterThanOrEqual(qs.length - 1);
     }
     const qs = montarRodada(e, "treino", criarRng(5));

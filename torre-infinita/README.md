@@ -54,10 +54,10 @@ npm run typecheck
 ## Supabase
 
 O projeto de produção é `torre-infinita` (ref `reoekaxhwabdopgaznni`, região `sa-east-1`), com as migrações
-`0001`, `0002` e `0003` já aplicadas. Para criar outro ambiente:
+`0001` a `0005` já aplicadas. Para criar outro ambiente:
 
 1. Crie um projeto e, em **Authentication → Sign In / Providers**, ative **Allow anonymous sign-ins** (os alunos entram assim).
-2. Aplique as migrações de `supabase/migrations/` em ordem (`0001` a `0003`), pelo SQL Editor ou `supabase db push`.
+2. Aplique as migrações de `supabase/migrations/` em ordem (`0001` a `0005`), pelo SQL Editor ou `supabase db push`.
 3. Copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 4. Crie o usuário do professor em **Authentication → Users** (e-mail e senha).
 
@@ -81,6 +81,13 @@ select * from professor_importar_alunos('<uuid-da-turma>',
 
 ### Segurança
 
+- **Só professores cadastrados criam turmas.** A tabela `professores` é uma lista de e-mails autorizados (migração `0004`).
+- **Sair não descarta a sessão anônima.** A migração `0005` (`aluno_sair`) só desvincula o aluno; assim o limite de 30 logins anônimos/hora/IP do Supabase não estoura numa sala. Veja `DEPLOY.md`.
+  Sem ela, qualquer pessoa que abrisse uma conta de e-mail poderia importar códigos de alunos reais antes do professor e
+  ficar com os PINs. Autorize um professor com `insert into public.professores (email) values ('nome@escola.edu.br');`.
+- O avatar aceita só três números dentro do intervalo conhecido, e os PINs vêm de um gerador criptográfico.
+- O app envia cabeçalhos de segurança e uma política de conteúdo (`next.config.ts`): só carrega recursos do próprio site e fala com o Supabase.
+
 - Nome real e código do aluno só o professor vê. O placar (`placar_turma()`) expõe apenas apelido, avatar e pontos.
 - PIN individual com hash (bcrypt) e **bloqueio de 10 minutos após 5 erros**.
 - Apelidos passam por filtro no servidor (`palavras_bloqueadas`, editável).
@@ -91,6 +98,8 @@ Limite conhecido: a pontuação é calculada no navegador. O teto por rodada e o
 estrago de quem forjar dados, mas não o eliminam. Para competições valendo nota, mova o cálculo para uma função no servidor.
 
 ## Publicar na Vercel
+
+O passo a passo completo, com a lista de verificação, está em [`DEPLOY.md`](./DEPLOY.md).
 
 Crie um projeto novo apontando para este repositório com **Root Directory = `torre-infinita`** (framework: Next.js).
 Configure as duas variáveis do Supabase em *Settings → Environment Variables*. O `vercel.json` da raiz do repositório

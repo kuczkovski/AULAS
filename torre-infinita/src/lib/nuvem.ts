@@ -33,11 +33,17 @@ export async function entrarComCodigo(codigo: string, pin: string): Promise<Dado
   }
 }
 
+/**
+ * Sai do aluno sem encerrar a sessão anônima: o Supabase limita logins anônimos a
+ * 30 por hora por IP, e uma turma inteira atrás do IP da escola estouraria isso se
+ * cada troca de aluno criasse uma sessão nova. O servidor desvincula o aluno e a
+ * sessão fica sem acesso a nada até o próximo login.
+ */
 export async function sairDaNuvem() {
   try {
-    await getSupabase()?.auth.signOut();
+    await getSupabase()?.rpc("aluno_sair");
   } catch {
-    /* ignora */
+    /* sem rede: o vínculo cai no próximo login de outro aluno */
   }
 }
 
@@ -74,24 +80,34 @@ export async function salvarPerfil(apelido: string, avatar: Avatar): Promise<Res
   }
 }
 
+/** Uma sincronização por vez: chamadas em paralelo (fim de rodada e volta da internet) não podem enviar a mesma rodada duas vezes. */
+let emCurso: Promise<void> = Promise.resolve();
+
 /** Enfileira a rodada e tenta enviar tudo. Falhas de rede não interrompem o jogo. */
-export async function sincronizar(alunoId: string, estado: EstadoAluno, rodada?: RodadaPendente) {
+export function sincronizar(alunoId: string, estado: EstadoAluno, rodada?: RodadaPendente): Promise<void> {
+  if (rodada) gravarFila([...lerFila(), rodada]);
+  const passo = emCurso.then(() => enviar(alunoId, estado));
+  emCurso = passo.catch(() => {});
+  return passo;
+}
+
+async function enviar(alunoId: string, estado: EstadoAluno) {
   const sb = getSupabase();
   if (!sb) return;
-  if (rodada) gravarFila([...lerFila(), rodada]);
   try {
-    const fila = lerFila();
-    const restantes: RodadaPendente[] = [];
-    for (const r of fila) {
+    const enviadas = new Set<string>();
+    for (const r of lerFila()) {
       // rodada de outro aluno neste computador: fica guardada até ele entrar de novo
-      if (r.alunoId !== alunoId) { restantes.push(r); continue; }
+      if (r.alunoId !== alunoId) continue;
       const { error } = await sb.from("rodadas").insert({
-        aluno_id: r.alunoId, tipo: r.tipo, andar: r.andar, acertos: r.acertos, total: r.total,
+        id: r.id, aluno_id: r.alunoId, tipo: r.tipo, andar: r.andar, acertos: r.acertos, total: r.total,
         pontos: r.pontos, duracao_s: r.duracaoS, falhou: r.falhou,
       });
-      if (error) restantes.push(r);
+      // 23505 = o servidor já tem esta rodada (o envio anterior chegou, mas a resposta se perdeu)
+      if (!error || error.code === "23505") enviadas.add(r.id);
     }
-    gravarFila(restantes);
+    // relê a fila: rodadas que entraram enquanto se enviava não podem ser apagadas
+    gravarFila(lerFila().filter((r) => !enviadas.has(r.id)));
     await sb.from("estado_aluno").upsert({ aluno_id: alunoId, estado, atualizado_em: new Date().toISOString() });
   } catch {
     /* sem rede: a fila fica guardada e sai no próximo envio */

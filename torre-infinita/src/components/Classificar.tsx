@@ -35,7 +35,7 @@ export function Classificar({
 
   const colocarSelecionado = (g: 0 | 1) => { if (sel) { setAtrib((a) => ({ ...a, [sel]: g })); setSel(null); } };
 
-  const chip = (item: string, i: number, extra = "") => (
+  const chip = (item: string, extra = "") => (
     <button
       key={item}
       type="button"
@@ -44,7 +44,6 @@ export function Classificar({
       onClick={(e) => teclado(e, item)}
       aria-pressed={sel === item}
       className={"btn min-h-14 touch-none select-none border-2 px-4 text-xl " + (sel === item ? "border-marca bg-marca-clara " : "border-linha bg-white ") + extra}
-      data-i={i}
     >
       {sinal(item)}
     </button>
@@ -60,7 +59,7 @@ export function Classificar({
               {itens.map((item, i) => {
                 if (grupoDe(i) !== g) return null;
                 const certo = travada ? resposta[i] === String(g) : undefined;
-                return chip(item, i, travada ? (certo ? "border-ok bg-ok-fundo text-ok" : "anim-balanca border-erro bg-erro-fundo text-erro") : "");
+                return chip(item, travada ? (certo ? "border-ok bg-ok-fundo text-ok" : "anim-balanca border-erro bg-erro-fundo text-erro") : "");
               })}
             </div>
             {sel && !travada && <button type="button" className="btn btn-suave mt-2 w-full" onClick={() => colocarSelecionado(g)}>Colocar “{sinal(sel)}” aqui</button>}
@@ -72,7 +71,7 @@ export function Classificar({
         <>
           <p className="mt-3 text-center text-sm font-bold text-suave">Arraste cada item para um grupo, ou toque no item e depois no grupo.</p>
           <div data-alvo="pool" className="mt-2 flex min-h-20 flex-wrap justify-center gap-2 rounded-2xl p-1" role="group" aria-label="Itens para classificar">
-            {itens.map((item, i) => (atrib[item] === undefined ? chip(item, i, "shadow-[0_4px_0_var(--color-linha)]") : null))}
+            {itens.map((item, i) => (atrib[item] === undefined ? chip(item, "shadow-[0_4px_0_var(--color-linha)]") : null))}
           </div>
           <div className="mt-4 flex justify-center gap-3">
             <button type="button" className="btn btn-fantasma" disabled={faltam === itens.length} onClick={() => { setAtrib({}); setSel(null); }}>Recomeçar</button>

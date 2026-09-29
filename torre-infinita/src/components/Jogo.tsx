@@ -6,7 +6,7 @@ import { desbloqueadas, tipoDoAndar, type TipoRodada } from "@/engine/selecao";
 import { criarRng } from "@/engine/rng";
 import { Rodada, type ResumoRodada } from "@/engine/rodada";
 import type { Ano, Avatar, EstadoAluno } from "@/engine/tipos";
-import { apagarSessao, carregarSessao, salvarSessao, type Sessao } from "@/lib/armazenamento";
+import { apagarSessao, carregarSessao, novoId, salvarSessao, type Sessao } from "@/lib/armazenamento";
 import { carregarEstadoRemoto, entrarComCodigo, sairDaNuvem, salvarPerfil, sincronizar, type ErroEntrada } from "@/lib/nuvem";
 import { som } from "@/lib/som";
 import { TelaEncontro } from "./TelaEncontro";
@@ -153,7 +153,7 @@ export function Jogo() {
     persistir();
     if (s.modo === "nuvem" && s.aluno) {
       void sincronizar(s.aluno.alunoId, s.estado, {
-        alunoId: s.aluno.alunoId, tipo: rodada.tipo, andar, acertos: resumo.acertos, total: Math.max(1, resumo.total),
+        id: novoId(), alunoId: s.aluno.alunoId, tipo: rodada.tipo, andar, acertos: resumo.acertos, total: Math.max(1, resumo.total),
         pontos: resumo.pontos, duracaoS: Math.min(7200, Math.round((Date.now() - inicio) / 1000)), falhou: resumo.falhou,
       });
     }

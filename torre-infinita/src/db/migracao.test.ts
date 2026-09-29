@@ -21,9 +21,10 @@ describe("migração do Supabase", () => {
     create role authenticated; create role anon;
     grant usage on schema public, auth to authenticated;
   `);
-  for (const arq of ["0001_init.sql", "0002_endurecer_funcoes.sql", "0003_placar_evolucao.sql"])
+  for (const arq of ["0001_init.sql", "0002_endurecer_funcoes.sql", "0003_placar_evolucao.sql", "0004_seguranca.sql", "0005_aluno_sair.sql"])
       await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/" + arq, import.meta.url)), "utf8"));
   await db.exec(`grant select, insert, update, delete on all tables in schema public to authenticated;`);
+    await db.exec(`insert into professores (email) values ('prof@escola.test')`);
 
   const PROF = "11111111-1111-1111-1111-111111111111";
   const S1 = "22222222-2222-2222-2222-222222222222";
@@ -32,7 +33,7 @@ describe("migração do Supabase", () => {
   await db.exec(`insert into auth.users values ('${PROF}'),('${S1}'),('${S2}'),('${S3}')`);
 
   async function como<T>(uid: string, anon: boolean, fn: () => Promise<T>): Promise<T> {
-    await db.exec(`select set_config('request.jwt.sub','${uid}',false), set_config('request.jwt.claims','{"is_anonymous":${anon}}',false); set role authenticated;`);
+    await db.exec(`select set_config('request.jwt.sub','${uid}',false), set_config('request.jwt.claims','{"is_anonymous":${anon}${anon ? "" : ',"email":"prof@escola.test"'}}',false); set role authenticated;`);
     try { return await fn(); } finally { await db.exec("reset role;"); }
   }
   let ok = 0;
@@ -76,8 +77,8 @@ describe("migração do Supabase", () => {
   esperar("bloqueia após 5 falhas, mesmo com o PIN certo", bloq.erro === "bloqueado");
 
   // perfil e apelidos
-  await como(S1, true, () => db.query<any>(`select aluno_atualizar_perfil('Ana M.', '{"cor":2}')`));
-  await como(S2, true, () => db.query<any>(`select aluno_atualizar_perfil('Bruno', '{"cor":1}')`));
+  await como(S1, true, () => db.query<any>(`select aluno_atualizar_perfil('Ana M.', '{"cor":2,"forma":1,"acessorio":0}')`));
+  await como(S2, true, () => db.query<any>(`select aluno_atualizar_perfil('Bruno', '{"cor":1,"forma":0,"acessorio":4}')`));
   for (const ruim of ["porra doida", "P.U.T.A", "x", "1abc", "<script>"])
     await erra(`apelido recusado: ${ruim}`, () => como(S3, true, () => db.query<any>(`select aluno_atualizar_perfil($1,'{}')`, [ruim])), "apelido-invalido");
 
@@ -142,7 +143,7 @@ describe("placar por evolução pessoal", () => {
       create role authenticated; create role anon;
       grant usage on schema public, auth to authenticated;
     `);
-    for (const arq of ["0001_init.sql", "0002_endurecer_funcoes.sql", "0003_placar_evolucao.sql"])
+    for (const arq of ["0001_init.sql", "0002_endurecer_funcoes.sql", "0003_placar_evolucao.sql", "0004_seguranca.sql", "0005_aluno_sair.sql"])
       await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/" + arq, import.meta.url)), "utf8"));
     await db.exec(`grant select, insert, update, delete on all tables in schema public to authenticated;`);
 

@@ -1,6 +1,6 @@
 import { chaveFato, obterFato, registrar } from "./dominio";
 import { aplicarXp, hojeISO } from "./estado";
-import { gerarPergunta } from "./gerar";
+import { assinaturaDe, gerarPergunta } from "./gerar";
 import { POR_ID } from "./habilidades";
 import { criarRng } from "./rng";
 import { CONFIG_RODADA, chefeDaVez, desbloqueadas, montarRodada, perguntaDe, zonaDominante, type TipoRodada } from "./selecao";
@@ -154,7 +154,7 @@ export class Rodada {
     const h = POR_ID.get(p.habilidade);
     if (!h || this.falhou) return;
     let q = gerarPergunta(h, p.cat, this.r, false, true);
-    for (let t = 0; t < 8 && q.expr === p.expr && q.enunciado === p.enunciado; t++) q = gerarPergunta(h, p.cat, this.r, false, true);
+    for (let t = 0; t < 8 && assinaturaDe(q) === assinaturaDe(p); t++) q = gerarPergunta(h, p.cat, this.r, false, true);
     this.perguntas.splice(Math.min(this.i + 4, this.perguntas.length), 0, q);
   }
 

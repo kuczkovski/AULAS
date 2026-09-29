@@ -17,6 +17,8 @@ export interface Sessao {
 
 /** Rodada aguardando envio ao servidor. */
 export interface RodadaPendente {
+  /** Identificador da rodada: o servidor o usa como chave, então reenviar não duplica. */
+  id: string;
   alunoId: string;
   tipo: "nivelamento" | "treino" | "revisao" | "chefe";
   andar: number | null;
@@ -70,5 +72,11 @@ export function apagarSessao() {
   }
 }
 
-export const lerFila = () => ler<RodadaPendente[]>(FILA) ?? [];
+export const novoId = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => { const r = (Math.random() * 16) | 0; return (c === "x" ? r : (r & 3) | 8).toString(16); });
+
+/** Fila de rodadas pendentes; itens guardados por versões antigas ganham um id. */
+export const lerFila = () => (ler<Omit<RodadaPendente, "id">[]>(FILA) ?? []).map((r) => ({ ...r, id: (r as { id?: string }).id ?? novoId() })) as RodadaPendente[];
 export const gravarFila = (f: RodadaPendente[]) => gravar(FILA, f.slice(-200));

@@ -1,5 +1,5 @@
 import { chaveFato, consolidada, dominio, dominioHabilidade, pesoCategoria } from "./dominio";
-import { gerarPergunta } from "./gerar";
+import { assinaturaDe, gerarPergunta } from "./gerar";
 import { HABILIDADES } from "./habilidades";
 import { ZONAS } from "./zonas";
 import type { EstadoAluno, Habilidade, Pergunta, Rng } from "./tipos";
@@ -89,7 +89,7 @@ export function montarRodada(e: EstadoAluno, tipo: TipoRodada, r: Rng, foco?: st
     const base = disponiveis.length ? disponiveis : pool;
     const escolhido = sortear(r, base, base.map((x) => pesos[pool.indexOf(x)]!));
     const q = perguntaDe(escolhido.h, e, r, { chefe: tipo === "chefe" });
-    const assinatura = q.enunciado + "|" + q.expr;
+    const assinatura = assinaturaDe(q);
     if (vistos.has(assinatura) && tentativas < 300) continue;
     vistos.add(assinatura);
     porHabilidade.set(escolhido.h.id, (porHabilidade.get(escolhido.h.id) ?? 0) + 1);

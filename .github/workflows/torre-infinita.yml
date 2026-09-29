@@ -1,0 +1,40 @@
+name: Torre Infinita
+
+on:
+  pull_request:
+    paths:
+      - "torre-infinita/**"
+      - ".github/workflows/torre-infinita.yml"
+  push:
+    paths:
+      - "torre-infinita/**"
+      - ".github/workflows/torre-infinita.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: torre-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Tipos, testes e build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: torre-infinita
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: torre-infinita/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      # inclui a verificação das migrações do Supabase num Postgres em memória
+      - run: npm test
+      # a build funciona sem as variáveis do Supabase (modo local); a Vercel é quem publica
+      - run: npm run build

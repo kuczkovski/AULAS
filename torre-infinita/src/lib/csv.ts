@@ -13,7 +13,8 @@ export function celula(v: string | number | null | undefined): string {
   return /[;"\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-const data = (iso: string | null) => (iso ? iso.slice(0, 10) : "");
+/** Data no fuso do navegador (o professor), não em UTC: jogar às 22h não pode virar o dia seguinte. */
+const data = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("sv-SE") : "");
 
 /** Planilha da turma: uma linha por aluno, com o domínio de cada habilidade em porcentagem. */
 export function gerarCsv(turma: Pick<Turma, "ano">, alunos: AlunoLinha[]): string {
