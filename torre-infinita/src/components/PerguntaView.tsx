@@ -45,7 +45,7 @@ export function PerguntaView({
   const grande = p.expr !== "";
   return (
     <div className="anim-entra">
-      <p className={"text-center font-bold text-suave " + (grande ? "text-xl" : "mx-auto max-w-xl text-2xl leading-snug text-tinta")}>
+      <p className={"text-center font-bold text-suave " + (grande ? "text-xl" : "mx-auto max-w-xl leading-snug text-tinta " + (p.enunciado.length > 80 ? "text-xl sm:text-2xl" : "text-2xl"))}>
         {sinal(p.enunciado)}
       </p>
       {grande && (

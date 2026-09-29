@@ -12,7 +12,7 @@ em 24 habilidades que seguem a progressão do 6º ao 9º ano.
 
 | Antes | Agora |
 |---|---|
-| Só soma, subtração e tabuada até 12 | 30 habilidades: frações, inteiros, porcentagem, proporção, equações, potências, raízes, Pitágoras, estatística |
+| Só soma, subtração e tabuada até 12 | 33 habilidades: frações, inteiros, porcentagem, proporção, equações, potências, raízes, Pitágoras, estatística |
 | O conteúdo dependia do nível de XP | O conteúdo abre por **domínio**: uma habilidade só libera as seguintes quando o aluno a domina |
 | Começava do zero para todos | **Nivelamento** adaptativo de poucos minutos, com respostas digitadas |
 | Só múltipla escolha | Escolha, **digitar a resposta**, verdadeiro/falso, **ordenar**, **posicionar na reta numérica** e **encontre o erro** |
@@ -114,6 +114,26 @@ Dados e Problemas), cada uma com cor, descrição e um **chefe próprio** (`src/
 
 Para criar uma zona nova, dê a ela um nome em uma habilidade, cadastre a identidade em `ZONAS` e desenhe o retrato em
 `Chefe.tsx`; o teste `zonas.test.ts` cobra as duas coisas.
+
+## Problemas contextualizados
+
+A zona **Problemas** tem uma habilidade por etapa (`src/engine/habilidades/problemas.ts`), cada uma com várias
+situações do dia a dia. O aluno precisa montar a conta antes de calcular, e a explicação mostra o modelo
+(o que a situação diz, em matemática), não só o resultado.
+
+| Habilidade | Situações |
+|---|---|
+| 6º ano | grupos iguais, divisão em grupos, troco em dois passos |
+| 7º ano | desconto, aumento, temperatura e saldo (inteiros), "pensei em um número" e dinheiro (equações), escala de mapa |
+| 8º ano | juros simples, área e perímetro, notação científica (velocidade da luz, bactérias), táxi (função linear, nos dois sentidos) |
+| 9º ano | escada e diagonal (Pitágoras), nota que falta para a média, probabilidade, área com lado desconhecido (equação do 2º grau) |
+
+- Cada uma exige a anterior dominada (`problemas-6` → `7` → `8` → `9`) mais as habilidades de conteúdo de que usa.
+  Ficam fora do nivelamento, então um aluno novo do 7º ano só as abre depois de praticar as do 6º.
+- Valores são escolhidos para dar números redondos (por exemplo, o preço é sempre múltiplo de 20 para o desconto
+  ser inteiro), e números grandes ganham ponto de milhar nas alternativas (600.000).
+- O teste `habilidades.test.ts` recalcula cada resposta a partir dos números do próprio enunciado, então uma conta
+  errada num modelo de texto não passa despercebida.
 
 ## Placar de evolução
 

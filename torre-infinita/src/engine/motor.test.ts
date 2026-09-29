@@ -129,7 +129,21 @@ describe("nivelamento", () => {
 
   it("aluno colocado passa a ter conteúdo liberado", () => {
     const { e } = rodarNivelamento(7, conhece(7));
-    expect(desbloqueadas(e).length).toBe(HABILIDADES.filter((h) => h.ano <= 7).length);
+    // os problemas do 7º ano esperam o domínio dos problemas do 6º, que não entram no nivelamento
+    const esperado = HABILIDADES.filter((h) => h.ano <= 7 && h.id !== "problemas-7").map((h) => h.id);
+    expect(desbloqueadas(e).map((h) => h.id).sort()).toEqual(esperado.sort());
+  });
+
+  it("problemas do 7º ano só abrem depois de dominar os do 6º", () => {
+    const { e } = rodarNivelamento(7, conhece(7));
+    expect(desbloqueadas(e).some((h) => h.id === "problemas-7")).toBe(false);
+    const r = criarRng(21);
+    for (let k = 0; k < 4; k++) {
+      const rod = new Rodada(e, "treino", r, "problemas-6");
+      while (!rod.terminou) { rod.responder(rod.atual()!.resposta, 5000, false); if (!rod.avancar()) break; }
+      rod.concluir();
+    }
+    expect(desbloqueadas(e).some((h) => h.id === "problemas-7")).toBe(true);
   });
 
   it("respeita o limite de perguntas", () => {

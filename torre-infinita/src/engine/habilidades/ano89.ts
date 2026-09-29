@@ -177,7 +177,7 @@ export const equacao2grau: Habilidade = {
   },
 };
 
-const TERNOS: [number, number, number][] = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29], [9, 40, 41]];
+export const TERNOS: [number, number, number][] = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29], [9, 40, 41]];
 
 export const pitagoras: Habilidade = {
   id: "pitagoras",

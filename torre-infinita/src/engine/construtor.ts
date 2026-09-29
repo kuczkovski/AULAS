@@ -20,18 +20,21 @@ export function numerica(
     /** Outras respostas também corretas (ex.: as duas raízes de uma equação). */
     tambemCorretas?: number[];
     passo?: number;
+    /** Números grandes ganham ponto de milhar nas alternativas (600.000). Digitar segue sem separador. */
+    milhar?: boolean;
   },
 ): CorpoPergunta {
-  const { resposta: bruta, distratores, tambemCorretas, passo, ...base } = d;
-  const resposta = num(bruta);
+  const { resposta: bruta, distratores, tambemCorretas, passo, milhar, ...base } = d;
+  const fm = (v: number) => (milhar && Math.abs(v) >= 10000 ? v.toLocaleString("pt-BR") : num(v));
+  const resposta = c.digitar ? num(bruta) : fm(bruta);
   const aceitar = tambemCorretas?.map(num);
   if (c.digitar) return { ...base, formato: "digitar", resposta, aceitar };
 
-  const proibidos = new Set([bruta, ...(tambemCorretas ?? [])].map(num));
+  const proibidos = new Set([bruta, ...(tambemCorretas ?? [])].map(fm));
   const naoNegativo = bruta >= 0;
   const pool: string[] = [];
   const tentar = (v: number) => {
-    const s = num(v);
+    const s = fm(v);
     if (proibidos.has(s) || pool.includes(s) || (naoNegativo && v < 0) || (bruta >= 5 && v === 0)) return;
     pool.push(s);
   };

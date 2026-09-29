@@ -222,3 +222,93 @@ describe("formatos novos", () => {
     for (const f of ["escolha", "vf", "ordenar", "reta"]) expect(vistos.has(f), f).toBe(true);
   });
 });
+
+describe("problemas contextualizados: a resposta confere com o enunciado", () => {
+  const nums = (t: string) => (t.match(/[-−]?\d+/g) ?? []).map((n) => Number(n.replace("−", "-")));
+  const val = (p: Pergunta) => Number(p.resposta.replace(",", "."));
+  const gerar = (id: string, cat: string) =>
+    Array.from({ length: SEMENTES }, (_, s) => gerarPergunta(POR_ID.get(id)!, cat, criarRng(s * 31 + 5), true));
+
+  it("7º ano: desconto, aumento, temperatura, equação e escala", () => {
+    for (const p of gerar("problemas-7", "desconto")) { const [P, pc] = nums(p.enunciado) as [number, number]; expect(val(p), p.enunciado).toBe(P - (P * pc) / 100); }
+    for (const p of gerar("problemas-7", "aumento")) { const [P, pc] = nums(p.enunciado) as [number, number]; expect(val(p), p.enunciado).toBe(P + (P * pc) / 100); }
+    for (const p of gerar("problemas-7", "temperatura")) {
+      const n = nums(p.enunciado);
+      const esperado = p.enunciado.includes("termômetro") ? (p.enunciado.includes("subiu") ? n[0]! + n[1]! : n[0]! - n[1]!)
+        : p.enunciado.includes("devia") ? n[1]! - n[0]!
+        : n[0]! + n[1]!; // mergulhador: −fundo (já com sinal) + subida
+      expect(val(p), p.enunciado).toBe(esperado);
+    }
+    for (const p of gerar("problemas-7", "equacao")) {
+      const n = nums(p.enunciado);
+      expect(val(p), p.enunciado).toBe(p.enunciado.startsWith("Pensei") ? (n[2]! - n[1]!) / n[0]! : (n[0]! - n[1]!) / 2);
+      expect(Number.isInteger(val(p))).toBe(true);
+    }
+    for (const p of gerar("problemas-7", "escala")) { const [, e, cm] = nums(p.enunciado) as [number, number, number]; expect(val(p), p.enunciado).toBe(e * cm); }
+  });
+
+  it("8º ano: juros, área e perímetro, notação científica e táxi", () => {
+    for (const p of gerar("problemas-8", "juros")) {
+      const [C, i, t] = nums(p.enunciado) as [number, number, number], J = (C * i * t) / 100;
+      expect(val(p), p.enunciado).toBe(p.enunciado.includes("de juros") ? J : C + J);
+    }
+    for (const p of gerar("problemas-8", "area-perimetro")) {
+      const [a, b] = nums(p.enunciado) as [number, number];
+      expect(val(p), p.enunciado).toBe(p.enunciado.includes("quadrados") ? a * b : 2 * (a + b));
+    }
+    for (const p of gerar("problemas-8", "notacao")) {
+      const n = nums(p.enunciado), ult = n[n.length - 1]!;
+      expect(val(p), p.enunciado).toBeCloseTo(p.enunciado.includes("luz") ? 3e5 * ult : ult * 0.002, 9);
+    }
+    for (const p of gerar("problemas-8", "taxi")) {
+      const [f, v, k] = nums(p.enunciado) as [number, number, number];
+      expect(val(p), p.enunciado).toBe(p.enunciado.includes("Quanto custa") ? f + v * k : (k - f) / v);
+    }
+  });
+
+  it("9º ano: Pitágoras, média, probabilidade e área com equação do 2º grau", () => {
+    for (const p of gerar("problemas-9", "pitagoras")) {
+      const [x, y] = nums(p.enunciado) as [number, number];
+      expect(val(p), p.enunciado).toBeCloseTo(p.enunciado.includes("escada") ? Math.sqrt(x * x - y * y) : Math.sqrt(x * x + y * y), 9);
+    }
+    for (const p of gerar("problemas-9", "media-meta")) {
+      const n = nums(p.enunciado), alvo = n.pop()!, soma = n.reduce((s, x) => s + x, 0);
+      expect(n.length).toBe(4);
+      expect(val(p), p.enunciado).toBe(5 * alvo - soma);
+      expect(val(p)).toBeLessThanOrEqual(10);
+    }
+    for (const p of gerar("problemas-9", "probabilidade")) { const [v, a] = nums(p.enunciado) as [number, number]; expect(val(p), p.enunciado).toBeCloseTo((100 * v) / (v + a), 9); }
+    for (const p of gerar("problemas-9", "area-2grau")) {
+      const [A, k] = nums(p.enunciado) as [number, number], x = val(p);
+      expect(x * (x + k), p.enunciado).toBe(A);
+    }
+  });
+
+  it("os textos não vazam a resposta nem têm espaços e sinais estranhos", () => {
+    for (const id of ["problemas-6", "problemas-7", "problemas-8", "problemas-9"]) {
+      for (const p of todas(POR_ID.get(id)!, false)) {
+        expect(p.enunciado, p.enunciado).not.toMatch(/\s{2,}|\?\?|\.\./);
+        expect(p.enunciado.length, p.enunciado).toBeGreaterThan(30);
+        const entrega = /^\d+$/.test(p.resposta) && Number(p.resposta) > 100 && new RegExp(`(?<![\\d.,])${p.resposta}(?![\\d.,])`).test(p.dica);
+        expect(entrega, `dica entrega a resposta: ${p.dica}`).toBe(false);
+      }
+    }
+  });
+});
+
+describe("números grandes nas alternativas", () => {
+  it("usam ponto de milhar e o digitar continua sem separador", () => {
+    const h = POR_ID.get("problemas-8")!;
+    let visto = false;
+    for (let s = 1; s <= 200; s++) {
+      const p = gerarPergunta(h, "notacao", criarRng(s), false);
+      if (!p.enunciado.includes("luz")) continue;
+      visto = true;
+      for (const o of p.opcoes!) expect(o, p.enunciado).toMatch(/^\d{1,3}(\.\d{3})*$|^\d{1,4}$/);
+      expect(p.opcoes).toContain(p.resposta);
+      const d = gerarPergunta(h, "notacao", criarRng(s), true);
+      expect(d.resposta).toMatch(/^\d+$/);
+    }
+    expect(visto).toBe(true);
+  });
+});
