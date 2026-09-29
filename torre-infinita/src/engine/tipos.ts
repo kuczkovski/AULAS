@@ -106,6 +106,8 @@ export interface EstadoAluno {
   andar: number;
   quedas: number;
   fatos: Record<string, Fato>;
+  /** Zonas cujo chefe já foi derrotado. */
+  chefes: string[];
   /** Habilidades que o nivelamento marcou como conhecidas. */
   colocadas: string[];
   nivelamentoFeito: boolean;

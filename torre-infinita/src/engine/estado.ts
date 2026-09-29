@@ -11,6 +11,7 @@ export function novoEstado(ano: Ano): EstadoAluno {
     andar: 1,
     quedas: 0,
     fatos: {},
+    chefes: [],
     colocadas: [],
     nivelamentoFeito: false,
     dias: [],

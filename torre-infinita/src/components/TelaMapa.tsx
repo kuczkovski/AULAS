@@ -3,16 +3,19 @@ import { useMemo, useState } from "react";
 import { dominioHabilidade } from "@/engine/dominio";
 import { sequenciaDeDias, xpNecessario } from "@/engine/estado";
 import { HABILIDADES, POR_ID } from "@/engine/habilidades";
-import { CONFIG_RODADA, nomeDoChefe, situacao, tipoDoAndar, type Situacao } from "@/engine/selecao";
+import { CONFIG_RODADA, chefeDaVez, progressoDaZona, situacao, tipoDoAndar, zonaEmFoco, type Situacao } from "@/engine/selecao";
+import { ZONAS, infoZona } from "@/engine/zonas";
 import type { EstadoAluno } from "@/engine/tipos";
 import { Avatar } from "./Avatar";
+import { RetratoChefe } from "./Chefe";
+import { TorreSvg } from "./TorreSvg";
 import { PainelTurma } from "./PainelTurma";
 import { useInstalar } from "./Pwa";
 
 const DESCRICAO = {
   treino: "Desafios novos e o que ainda está fraco.",
   revisao: "Hora de rever o que você já sabe, para não esquecer.",
-  chefe: "Um guardião de verdade: mais perguntas, mais vidas e pontos ×1,5.",
+  chefe: "Um chefe de verdade: energia para derrubar, mais vidas e pontos ×1,5.",
 } as const;
 
 const ESTADO: Record<Situacao, { rotulo: string; cor: string }> = {
@@ -57,6 +60,11 @@ export function TelaMapa({
   const necessario = xpNecessario(estado.nivel);
   const dias = sequenciaDeDias(estado.dias);
   const zonas = useMemo(() => [...new Set(HABILIDADES.map((h) => h.zona))], []);
+  const zonaChefe = chefeDaVez(estado);
+  const zonaFoco = zonaEmFoco(estado);
+  const zonaAtual = tipo === "chefe" ? zonaChefe : zonaFoco;
+  const infoAtual = infoZona(zonaAtual);
+  const trofeus = estado.chefes.filter((z) => z in ZONAS).length;
   const taxa = estado.respondidas ? Math.round((estado.acertos / estado.respondidas) * 100) : null;
 
   return (
@@ -79,6 +87,7 @@ export function TelaMapa({
           <div className="flex items-center gap-1.5 rounded-full bg-ouro-fundo px-3 py-1.5 text-sm font-black text-ouro" title="Dias seguidos jogando">
             <Chama /> {dias} {dias === 1 ? "dia" : "dias"}
           </div>
+          <div className="rounded-full bg-marca-clara px-3 py-1.5 text-sm font-black text-marca-escura" title="Chefes derrotados">★ {trofeus}/{Object.keys(ZONAS).length} chefes</div>
         </header>
 
         {aviso && (
@@ -88,20 +97,32 @@ export function TelaMapa({
           </p>
         )}
 
-        <section className="cartao anim-entra p-6 text-center" aria-labelledby="andar">
-          <p className="rotulo">{tipo === "chefe" ? "Andar de chefe" : tipo === "revisao" ? "Andar de revisão" : "Andar de treino"}</p>
-          <h1 id="andar" className="mt-1 text-5xl font-black tracking-tight">Andar {estado.andar}</h1>
-          <p className="mx-auto mt-2 max-w-md text-lg text-suave">
-            {tipo === "chefe" ? `${nomeDoChefe(estado)}. ` : ""}{DESCRICAO[tipo]}
-          </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-2 text-sm font-bold text-suave">
-            <span className="rounded-full bg-marca-clara px-3 py-1">{CONFIG_RODADA[tipo].n} desafios</span>
-            <span className="rounded-full bg-marca-clara px-3 py-1">{estado.quedas >= 2 ? 5 : CONFIG_RODADA[tipo].vidas} vidas</span>
-            {estado.quedas >= 2 && <span className="rounded-full bg-ouro-fundo px-3 py-1 text-ouro">modo guiado: dicas sem custo</span>}
+        <section className="cartao anim-entra overflow-hidden" aria-labelledby="andar" style={{ borderColor: infoAtual.cor }}>
+          <div className="grid items-center gap-4 p-5 sm:grid-cols-[auto_1fr]" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${infoAtual.cor} 16%, white), white 70%)` }}>
+            <div className="mx-auto"><TorreSvg andar={estado.andar} zonaProximoChefe={zonaChefe} largura={150} /></div>
+            <div className="text-center sm:text-left">
+              <p className="rotulo" style={{ color: infoAtual.cor }}>
+                {tipo === "chefe" ? "Andar de chefe" : tipo === "revisao" ? "Andar de revisão" : "Andar de treino"} · Zona {zonaAtual}
+              </p>
+              <h1 id="andar" className="mt-1 text-5xl font-black tracking-tight">Andar {estado.andar}</h1>
+              {tipo === "chefe" ? (
+                <div className="mt-2 flex items-center justify-center gap-3 sm:justify-start">
+                  <RetratoChefe zona={zonaChefe} tamanho={56} />
+                  <p className="text-left text-lg font-bold"><span className="text-suave">Chefe:</span> {infoZona(zonaChefe).chefe.nome}</p>
+                </div>
+              ) : (
+                <p className="mt-2 text-lg text-suave">{DESCRICAO[tipo]}</p>
+              )}
+              <div className="mt-3 flex flex-wrap justify-center gap-2 text-sm font-bold text-suave sm:justify-start">
+                <span className="rounded-full bg-marca-clara px-3 py-1">{tipo === "chefe" ? "derrube a energia" : `${CONFIG_RODADA[tipo].n} desafios`}</span>
+                <span className="rounded-full bg-marca-clara px-3 py-1">{estado.quedas >= 2 ? Math.max(5, CONFIG_RODADA[tipo].vidas) : CONFIG_RODADA[tipo].vidas} vidas</span>
+                {estado.quedas >= 2 && <span className="rounded-full bg-ouro-fundo px-3 py-1 text-ouro">modo guiado: dicas sem custo</span>}
+              </div>
+              <button type="button" className="btn btn-marca btn-grande mt-5" onClick={() => aoJogar()} autoFocus>
+                {tipo === "chefe" ? "Ir ao chefe" : "Jogar"}
+              </button>
+            </div>
           </div>
-          <button type="button" className="btn btn-marca btn-grande mt-5" onClick={() => aoJogar()} autoFocus>
-            Jogar
-          </button>
         </section>
 
         <section aria-labelledby="jornada" className="grid gap-3">
@@ -112,9 +133,22 @@ export function TelaMapa({
           {zonas.map((z) => {
             const hs = HABILIDADES.filter((h) => h.zona === z && h.ano <= estado.ano);
             if (!hs.length) return null;
+            const info = infoZona(z), prog = progressoDaZona(estado, z);
             return (
-              <div key={z} className="cartao p-4" data-versao={versao}>
-                <p className="rotulo mb-2">{z}</p>
+              <div key={z} className="cartao overflow-hidden border-l-8 p-4" style={{ borderLeftColor: info.cor }} data-versao={versao}>
+                <div className="mb-3 flex items-center gap-3">
+                  <RetratoChefe zona={z} tamanho={52} apagado={prog.chefe !== "derrotado"} titulo={`Chefe da zona ${z}: ${info.chefe.nome}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-lg font-black" style={{ color: info.cor }}>{z}</p>
+                    <p className="text-sm font-semibold text-suave">{info.descricao}</p>
+                  </div>
+                  <div className="text-right text-xs font-black">
+                    <p className="text-suave">{prog.dominadas} de {prog.total} dominadas</p>
+                    <p className={prog.chefe === "derrotado" ? "text-ouro" : prog.chefe === "disponivel" ? "text-tinta" : "text-suave"}>
+                      {prog.chefe === "derrotado" ? "★ chefe derrotado" : prog.chefe === "disponivel" ? `chefe: ${info.chefe.nome}` : "chefe bloqueado"}
+                    </p>
+                  </div>
+                </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {hs.map((h) => {
                     const sit = situacao(h, estado);

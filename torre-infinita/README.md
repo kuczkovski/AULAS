@@ -96,6 +96,25 @@ Crie um projeto novo apontando para este repositório com **Root Directory = `to
 Configure as duas variáveis do Supabase em *Settings → Environment Variables*. O `vercel.json` da raiz do repositório
 continua publicando as outras aulas; este app é um projeto separado.
 
+## Zonas temáticas e chefes
+
+A torre é dividida em **10 zonas** (Fundação, Números, Frações, Inteiros, Proporção, Álgebra, Potências, Geometria,
+Dados e Problemas), cada uma com cor, descrição e um **chefe próprio** (`src/engine/zonas.ts`, retratos em
+`src/components/Chefe.tsx`). Só aparecem as zonas do ano do aluno.
+
+- **Andar de chefe:** todo andar múltiplo de 5. Antes da luta há uma cena de encontro com a fala do chefe e as regras.
+- **Quem é o chefe da vez:** a zona mais bem preparada (mais habilidades dominadas) ainda sem chefe derrotado.
+  Quando todos já caíram, vem a revanche na zona mais fraca (`chefeDaVez`).
+- **Luta:** o chefe começa com 10 de energia. Cada acerto tira 1; cada erro devolve meia. O aluno tem 4 vidas e as
+  perguntas são todas da zona do chefe, com pontos ×1,5. Zerar a energia derrota o chefe; sem vidas, ele resiste
+  (o andar não avança e não há troféu).
+- **Troféus:** a primeira vitória sobre cada chefe registra a zona em `estado.chefes`. O mapa mostra o retrato colorido
+  do chefe derrotado (e apagado enquanto não), e o professor vê a contagem na tabela de alunos.
+- **Torre:** o mapa desenha a torre com os andares vencidos, os chefes derrotados (★) e o retrato do próximo chefe.
+
+Para criar uma zona nova, dê a ela um nome em uma habilidade, cadastre a identidade em `ZONAS` e desenhe o retrato em
+`Chefe.tsx`; o teste `zonas.test.ts` cobra as duas coisas.
+
 ## Placar de evolução
 
 O placar de pontos favorece quem já joga muito e quem já sabe mais. O **placar de evolução** (`0003_placar_evolucao.sql`)
@@ -142,7 +161,6 @@ um componente em `PerguntaView` e uma regra em `resposta.ts`.
 
 ## Próximas etapas
 
-- Painel do professor (`/professor`): login, criar turma, importar alunos e imprimir cartões, mapa de calor de habilidades,
-  alunos travados e ausentes, meta semanal, exportação CSV.
+- Painel do professor: exportação CSV, histórico de semanas e relatório por aluno.
 - Mais problemas com contexto (7º ao 9º ano) e arrastar-e-soltar.
-- Zonas temáticas com chefes próprios e mais itens de personagem.
+- Mais itens de personagem (por exemplo, um por chefe derrotado) e animações da luta.

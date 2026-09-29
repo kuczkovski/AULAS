@@ -9,6 +9,7 @@ import type { Ano, Avatar, EstadoAluno } from "@/engine/tipos";
 import { apagarSessao, carregarSessao, salvarSessao, type Sessao } from "@/lib/armazenamento";
 import { carregarEstadoRemoto, entrarComCodigo, sairDaNuvem, salvarPerfil, sincronizar, type ErroEntrada } from "@/lib/nuvem";
 import { som } from "@/lib/som";
+import { TelaEncontro } from "./TelaEncontro";
 import { TelaEntrada } from "./TelaEntrada";
 import { TelaMapa } from "./TelaMapa";
 import { TelaNivelamento } from "./TelaNivelamento";
@@ -22,6 +23,7 @@ type Tela =
   | { t: "perfil"; primeira: boolean }
   | { t: "nivelamento" }
   | { t: "mapa" }
+  | { t: "encontro"; rodada: Rodada }
   | { t: "rodada"; rodada: Rodada; foco?: string; inicio: number }
   | { t: "resultado"; resumo: ResumoRodada; tipo: TipoRodada; foco?: string };
 
@@ -139,7 +141,9 @@ export function Jogo() {
     const e = estado();
     const tipo: TipoRodada = foco ? "treino" : tipoDoAndar(e.andar);
     setAviso(null);
-    setTela({ t: "rodada", rodada: new Rodada(e, tipo, criarRng(), foco), foco, inicio: Date.now() });
+    const rodada = new Rodada(e, tipo, criarRng(), foco);
+    // chefe: primeiro a cena de encontro; as demais rodadas começam direto
+    setTela(rodada.chefe ? { t: "encontro", rodada } : { t: "rodada", rodada, foco, inicio: Date.now() });
   }
 
   function fimRodada(rodada: Rodada, inicio: number, foco?: string) {
@@ -202,6 +206,16 @@ export function Jogo() {
           aoPerfil={() => setTela({ t: "perfil", primeira: false })}
           aoSair={sair}
           aoAlternar={alternar}
+        />
+      );
+    case "encontro":
+      return (
+        <TelaEncontro
+          rodada={tela.rodada}
+          andar={estado().andar}
+          primeiroContato={!estado().chefes.includes(tela.rodada.zona)}
+          aoEnfrentar={() => setTela({ t: "rodada", rodada: tela.rodada, inicio: Date.now() })}
+          aoVoltar={() => setTela({ t: "mapa" })}
         />
       );
     case "rodada":

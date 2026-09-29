@@ -2,7 +2,9 @@
 import { POR_ID } from "@/engine/habilidades";
 import type { ResumoRodada } from "@/engine/rodada";
 import { CONFIG_RODADA, type TipoRodada } from "@/engine/selecao";
+import { infoZona } from "@/engine/zonas";
 import { ACESSORIOS, NIVEL_ACESSORIO } from "./Avatar";
+import { RetratoChefe } from "./Chefe";
 
 export function TelaResultado({
   resumo,
@@ -27,10 +29,18 @@ export function TelaResultado({
   return (
     <main className="mx-auto grid min-h-dvh max-w-xl content-center gap-5 px-4 py-8">
       <section className="cartao anim-entra grid gap-5 p-6 text-center" aria-labelledby="res">
+        {resumo.chefe && (
+          <div className="rounded-2xl p-4" style={{ background: `color-mix(in srgb, ${infoZona(resumo.chefe.zona).cor} 14%, white)` }}>
+            <div className="mx-auto w-fit"><RetratoChefe zona={resumo.chefe.zona} tamanho={104} apagado={!resumo.chefe.venceu} /></div>
+            <p className="mt-1 text-xl font-black">{resumo.chefe.nome}</p>
+            <p className="mx-auto mt-1 max-w-sm text-lg font-bold italic">“{resumo.chefe.venceu ? infoZona(resumo.chefe.zona).chefe.derrota : infoZona(resumo.chefe.zona).chefe.vitoria}”</p>
+            {resumo.chefe.primeira && <p className="mx-auto mt-3 w-fit rounded-full bg-ouro-fundo px-4 py-1.5 font-black text-ouro">★ Troféu da zona {resumo.chefe.zona}!</p>}
+          </div>
+        )}
         <div>
-          <p className="rotulo">{CONFIG_RODADA[tipo].rotulo}</p>
+          <p className="rotulo">{CONFIG_RODADA[tipo].rotulo}{resumo.chefe ? "" : ` · ${resumo.zona}`}</p>
           <h1 id="res" className="mt-1 text-4xl font-black">
-            {resumo.falhou ? "As vidas acabaram" : resumo.acertos === resumo.total ? "Perfeito!" : dirigido ? "Treino concluído" : "Andar concluído"}
+            {resumo.chefe ? (resumo.chefe.venceu ? "Chefe derrotado!" : "O chefe resistiu") : resumo.falhou ? "As vidas acabaram" : resumo.acertos === resumo.total ? "Perfeito!" : dirigido ? "Treino concluído" : "Andar concluído"}
           </h1>
           {resumo.falhou && (
             <p className="mx-auto mt-2 max-w-sm text-suave">

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import type { Rodada, ResultadoResposta } from "@/engine/rodada";
 import { sinal } from "@/lib/formato";
 import { som } from "@/lib/som";
+import { infoZona } from "@/engine/zonas";
+import { EnergiaChefe, RetratoChefe } from "./Chefe";
 import { PerguntaView, type Feedback } from "./PerguntaView";
 import { Visual } from "./Visual";
 
@@ -86,13 +88,20 @@ export function TelaRodada({
       <header className="flex items-center gap-3">
         <button type="button" className="btn btn-fantasma min-h-11 px-3" onClick={() => setConfirmaSair(true)} aria-label="Sair da rodada">✕</button>
         <div className="min-w-0 flex-1">
-          <p className="rotulo">{rodada.chefe || `Andar ${andar}`} · {ROTULO[rodada.tipo]}</p>
-          <div className="mt-1 flex flex-wrap gap-1.5" role="img" aria-label={`${rodada.acertos} acertos, ${rodada.erros} erros`}>
-            {Array.from({ length: rodada.total }, (_, i) => {
-              const m = rodada.marcas[i];
-              return <span key={i} className={"h-2.5 w-6 rounded-full " + (m === 1 ? "bg-ok" : m === 0 ? "bg-erro" : "bg-linha")} />;
-            })}
-          </div>
+          <p className="rotulo" style={{ color: infoZona(rodada.zona).cor }}>{rodada.chefe || `Andar ${andar}`} · {ROTULO[rodada.tipo]} · {rodada.zona}</p>
+          {rodada.chefe ? (
+            <div className="mt-1 flex items-center gap-3">
+              <div key={rodada.acertos} className={rodada.acertos ? "anim-balanca" : ""}><RetratoChefe zona={rodada.zona} tamanho={44} /></div>
+              <div className="flex-1"><EnergiaChefe energia={rodada.energia} max={rodada.energiaMax} /></div>
+            </div>
+          ) : (
+            <div className="mt-1 flex flex-wrap gap-1.5" role="img" aria-label={`${rodada.acertos} acertos, ${rodada.erros} erros`}>
+              {Array.from({ length: rodada.total }, (_, i) => {
+                const m = rodada.marcas[i];
+                return <span key={i} className={"h-2.5 w-6 rounded-full " + (m === 1 ? "bg-ok" : m === 0 ? "bg-erro" : "bg-linha")} />;
+              })}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-1 text-2xl" role="img" aria-label={`${rodada.vidas} vidas`}>
           {Array.from({ length: rodada.vidasMax }, (_, i) => (
@@ -109,7 +118,7 @@ export function TelaRodada({
         </span>
       </div>
 
-      <section className={"cartao mt-3 flex-1 p-5 sm:p-8 " + (res && !res.ok ? "anim-balanca" : "")}>
+      <section className={"cartao mt-3 flex-1 border-t-8 p-5 sm:p-8 " + (res && !res.ok ? "anim-balanca" : "")} style={{ borderTopColor: infoZona(rodada.zona).cor }}>
         <PerguntaView key={p.id} p={p} feedback={res} dica={dica} onResponder={responder} />
 
         {!res && (
