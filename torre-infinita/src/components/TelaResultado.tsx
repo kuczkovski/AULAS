@@ -1,0 +1,93 @@
+"use client";
+import { POR_ID } from "@/engine/habilidades";
+import type { ResumoRodada } from "@/engine/rodada";
+import { CONFIG_RODADA, type TipoRodada } from "@/engine/selecao";
+import { ACESSORIOS, NIVEL_ACESSORIO } from "./Avatar";
+
+export function TelaResultado({
+  resumo,
+  tipo,
+  nivel,
+  aoContinuar,
+  aoMapa,
+  aoTreinar,
+  dirigido,
+}: {
+  resumo: ResumoRodada;
+  tipo: TipoRodada;
+  nivel: number;
+  aoContinuar: () => void;
+  aoMapa: () => void;
+  aoTreinar: (habilidade: string) => void;
+  /** Treino de uma habilidade só: não avança andar. */
+  dirigido?: boolean;
+}) {
+  const fracas = [...new Set(resumo.fracas.map((f) => f.habilidade))].slice(0, 3);
+  const novoAcessorio = resumo.niveisSubidos > 0 ? NIVEL_ACESSORIO.findIndex((n) => n <= nivel && n > nivel - resumo.niveisSubidos) : -1;
+  return (
+    <main className="mx-auto grid min-h-dvh max-w-xl content-center gap-5 px-4 py-8">
+      <section className="cartao anim-entra grid gap-5 p-6 text-center" aria-labelledby="res">
+        <div>
+          <p className="rotulo">{CONFIG_RODADA[tipo].rotulo}</p>
+          <h1 id="res" className="mt-1 text-4xl font-black">
+            {resumo.falhou ? "As vidas acabaram" : resumo.acertos === resumo.total ? "Perfeito!" : dirigido ? "Treino concluído" : "Andar concluído"}
+          </h1>
+          {resumo.falhou && (
+            <p className="mx-auto mt-2 max-w-sm text-suave">
+              Sem drama: você não perde nível nem pontos. {dirigido ? "Tente de novo quando quiser." : "O andar recomeça com perguntas novas e, depois de duas quedas, o jogo ajuda com mais vidas."}
+            </p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            [`${resumo.acertos}/${resumo.total}`, "acertos"],
+            [`${resumo.pontos}`, "pontos"],
+            [`+${resumo.xpGanho}`, "XP"],
+          ].map(([v, r]) => (
+            <div key={r} className="rounded-2xl bg-marca-clara p-3">
+              <p className="text-3xl font-black text-marca-escura">{v}</p>
+              <p className="rotulo">{r}</p>
+            </div>
+          ))}
+        </div>
+
+        {(resumo.bonus.length > 0 || resumo.niveisSubidos > 0 || resumo.novasHabilidades.length > 0) && (
+          <ul className="grid gap-2 text-left">
+            {resumo.bonus.map((b) => (
+              <li key={b.titulo} className="flex justify-between rounded-xl bg-ouro-fundo px-4 py-2 font-bold text-ouro"><span>{b.titulo}</span><span>+{b.valor}</span></li>
+            ))}
+            {resumo.niveisSubidos > 0 && (
+              <li className="rounded-xl bg-marca-clara px-4 py-2 font-black text-marca-escura">
+                Você subiu para o nível {nivel}!{novoAcessorio > 0 && ` Novo acessório: ${ACESSORIOS[novoAcessorio]}.`}
+              </li>
+            )}
+            {resumo.novasHabilidades.map((id) => (
+              <li key={id} className="rounded-xl bg-ok-fundo px-4 py-2 font-black text-ok">Nova habilidade liberada: {POR_ID.get(id)?.nome}</li>
+            ))}
+          </ul>
+        )}
+
+        {fracas.length > 0 && (
+          <div className="text-left">
+            <p className="rotulo mb-2">Vale reforçar</p>
+            <div className="flex flex-wrap gap-2">
+              {fracas.map((id) => (
+                <button key={id} type="button" className="btn btn-suave min-h-10 text-sm" onClick={() => aoTreinar(id)}>
+                  Treinar: {POR_ID.get(id)?.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-wrap justify-center gap-3">
+          <button type="button" className="btn btn-marca btn-grande" onClick={aoContinuar} autoFocus>
+            {dirigido ? "Treinar mais" : resumo.falhou ? "Tentar de novo" : "Próximo andar"}
+          </button>
+          <button type="button" className="btn btn-fantasma" onClick={aoMapa}>Voltar ao mapa</button>
+        </div>
+      </section>
+    </main>
+  );
+}

@@ -63,10 +63,11 @@ export function perguntaDe(h: Habilidade, e: EstadoAluno, r: Rng, opts: { chefe?
   return gerarPergunta(h, cat, r, digitar);
 }
 
-export function montarRodada(e: EstadoAluno, tipo: TipoRodada, r: Rng): Pergunta[] {
+export function montarRodada(e: EstadoAluno, tipo: TipoRodada, r: Rng, foco?: string): Pergunta[] {
   const cfg = CONFIG_RODADA[tipo];
   const todas = desbloqueadas(e).map((h) => ({ h, sit: situacao(h, e) }));
   let pool = tipo === "revisao" ? todas.filter((x) => x.sit === "consolidada") : todas;
+  if (foco) pool = todas.filter((x) => x.h.id === foco);
   if (!pool.length) pool = todas;
   const pesos = pool.map(({ h, sit }) => {
     const w = pesoHabilidade(h, e, sit);

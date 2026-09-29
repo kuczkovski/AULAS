@@ -106,5 +106,5 @@ export interface EstadoAluno {
   respondidas: number;
   acertos: number;
   som: boolean;
-  semSom: boolean;
+  calmo: boolean;
 }

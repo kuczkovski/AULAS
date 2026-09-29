@@ -19,7 +19,7 @@ export function novoEstado(ano: Ano): EstadoAluno {
     respondidas: 0,
     acertos: 0,
     som: false,
-    semSom: false,
+    calmo: false,
   };
 }
 

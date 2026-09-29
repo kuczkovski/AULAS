@@ -52,13 +52,15 @@ export class Rodada {
     private e: EstadoAluno,
     tipo: TipoRodada,
     private r: Rng = criarRng(),
+    /** Treino dirigido: todas as perguntas vêm desta habilidade. */
+    readonly foco?: string,
   ) {
     this.tipo = tipo;
     this.guiada = e.quedas >= 2;
     const cfg = CONFIG_RODADA[tipo];
     this.vidasMax = this.guiada ? Math.max(5, cfg.vidas) : cfg.vidas;
     this.vidas = this.vidasMax;
-    this.perguntas = montarRodada(e, tipo, r);
+    this.perguntas = montarRodada(e, tipo, r, foco);
     this.chefe = tipo === "chefe" ? nomeDoChefe(e) : "";
     this.antes = new Set(desbloqueadas(e).map((h) => h.id));
   }
@@ -150,8 +152,11 @@ export class Rodada {
 
     const e = this.e;
     e.rodadas++;
-    if (this.falhou) e.quedas++;
-    else { e.quedas = 0; e.andar++; }
+    // treino dirigido é prática livre: não mexe em andar nem em quedas
+    if (!this.foco) {
+      if (this.falhou) e.quedas++;
+      else { e.quedas = 0; e.andar++; }
+    }
     e.melhorSequencia = Math.max(e.melhorSequencia, this.melhorSequencia);
     const hoje = hojeISO();
     if (!e.dias.includes(hoje)) e.dias = [...e.dias, hoje].slice(-90);
