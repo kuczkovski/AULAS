@@ -139,7 +139,7 @@ export function TelaRodada({
         {res && !res.ok && (
           <div role="status" className="anim-entra mt-6 rounded-2xl bg-erro-fundo p-4 text-left">
             <p className="text-lg font-black text-erro">
-              {p.formato === "ordenar" || p.formato === "reta" ? (
+              {p.formato === "ordenar" || p.formato === "reta" || p.formato === "classificar" ? (
                 "Ainda não."
               ) : (
                 <>Ainda não. A resposta é <span className="text-xl">{sinal(p.resposta)}</span></>

@@ -12,10 +12,10 @@ em 24 habilidades que seguem a progressão do 6º ao 9º ano.
 
 | Antes | Agora |
 |---|---|
-| Só soma, subtração e tabuada até 12 | 33 habilidades: frações, inteiros, porcentagem, proporção, equações, potências, raízes, Pitágoras, estatística |
+| Só soma, subtração e tabuada até 12 | 36 habilidades: frações, inteiros, porcentagem, proporção, equações, potências, raízes, Pitágoras, estatística |
 | O conteúdo dependia do nível de XP | O conteúdo abre por **domínio**: uma habilidade só libera as seguintes quando o aluno a domina |
 | Começava do zero para todos | **Nivelamento** adaptativo de poucos minutos, com respostas digitadas |
-| Só múltipla escolha | Escolha, **digitar a resposta**, verdadeiro/falso, **ordenar**, **posicionar na reta numérica** e **encontre o erro** |
+| Só múltipla escolha | Escolha, **digitar a resposta**, verdadeiro/falso, **ordenar** e **classificar** (arrastando), **posicionar na reta numérica** e **encontre o erro** |
 | Explicação só no modo "Assistido" | **Dica e explicação para todos**; erro volta como reforço com números novos |
 | Cronômetro que chegava a 3 s | Sem cronômetro; rapidez só rende bônus, nunca punição |
 | Placar premiava tempo de jogo | **Placar de evolução** (cada aluno contra o próprio histórico), placar de pontos com teto diário, meta coletiva da turma e apelidos moderados |
@@ -135,6 +135,25 @@ situações do dia a dia. O aluno precisa montar a conta antes de calcular, e a 
 - O teste `habilidades.test.ts` recalcula cada resposta a partir dos números do próprio enunciado, então uma conta
   errada num modelo de texto não passa despercebida.
 
+## Itens de personagem
+
+O personagem tem cor, forma e acessório. Os acessórios vêm de duas fontes (`src/components/Avatar.tsx`):
+os 4 primeiros por **nível** (Óculos no 3, Boné no 6, Coroa no 10) e **um por chefe derrotado**: Capacete de tijolos,
+Chapéu de mago, Chifres de dragão, Capuz da sombra, Faixa gigante, Faixa do X, Laço de expoente, Chapéu triângulo,
+Olho do oráculo e Boné do mercador. A tela de resultado avisa do item novo na primeira vitória, e o item aparece
+também no placar da turma. A liberação é conferida no navegador; o servidor só guarda o avatar escolhido.
+
+## Arrastar e soltar
+
+`Arrastar.tsx` trata mouse e toque com eventos de ponteiro. Um toque curto seleciona (e Enter/espaço funcionam no
+teclado), então nada exige arrastar: quem tem dificuldade motora ou usa teclado consegue responder do mesmo jeito.
+
+## Exportação para planilha
+
+No painel do professor, **Baixar planilha (CSV)** exporta uma linha por aluno com nível, andar, acerto, nota de
+evolução, pontos e minutos da semana, chefes derrotados, última atividade e o domínio (%) de cada habilidade do ano.
+O arquivo usa `;` e UTF-8 com BOM (abre direto no Excel em português) e neutraliza fórmulas (`=`, `+`, `-`, `@`).
+
 ## Placar de evolução
 
 O placar de pontos favorece quem já joga muito e quem já sabe mais. O **placar de evolução** (`0003_placar_evolucao.sql`)
@@ -161,7 +180,8 @@ compara cada aluno com o próprio histórico, e é a aba que abre por padrão. N
 | `escolha` | Marcar uma alternativa (atalhos 1 a 4) | Tabuada, porcentagem |
 | `digitar` | Teclado na tela, sem alternativas; só aparece depois que o aluno domina a categoria | Somas, equações |
 | `vf` | Verdadeiro ou falso | Divisibilidade |
-| `ordenar` | Tocar nos itens na ordem certa | Frações e decimais |
+| `ordenar` | Arrastar ou tocar nos itens até pô-los em ordem | Frações e decimais |
+| `classificar` | Arrastar cada item para um de dois grupos (ou tocar no item e depois no grupo) | Primos e compostos, frações maiores ou menores que 1, sinal de produtos |
 | `reta` | Tocar (ou usar as setas) na reta numérica | Frações e inteiros na reta |
 | `escolha` + `linhas` | "Encontre o erro" numa resolução em linhas | Equação do 1º grau, ordem das operações |
 
@@ -181,6 +201,6 @@ um componente em `PerguntaView` e uma regra em `resposta.ts`.
 
 ## Próximas etapas
 
-- Painel do professor: exportação CSV, histórico de semanas e relatório por aluno.
-- Mais problemas com contexto (7º ao 9º ano) e arrastar-e-soltar.
-- Mais itens de personagem (por exemplo, um por chefe derrotado) e animações da luta.
+- Painel do professor: histórico de semanas e relatório individual por aluno.
+- Mais situações nos problemas contextualizados e mais habilidades de classificar.
+- Animações da luta contra o chefe.

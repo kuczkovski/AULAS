@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import type { Pergunta } from "@/engine/tipos";
 import { sinal } from "@/lib/formato";
+import { Classificar } from "./Classificar";
 import { Ordenar } from "./Ordenar";
 import { RetaInterativa } from "./RetaInterativa";
 import { Teclado } from "./Teclado";
@@ -69,7 +70,9 @@ export function PerguntaView({
       )}
 
       <div className="mt-6">
-        {p.formato === "ordenar" ? (
+        {p.formato === "classificar" ? (
+          <Classificar itens={p.opcoes!} grupos={p.grupos!} resposta={p.resposta} escolhida={feedback?.escolhida} onConfirmar={onResponder} />
+        ) : p.formato === "ordenar" ? (
           <Ordenar itens={p.opcoes!} resposta={p.resposta} escolhida={feedback?.escolhida} onConfirmar={onResponder} />
         ) : p.formato === "reta" ? (
           <RetaInterativa reta={p.reta!} alvo={Number(p.resposta.replace(",", "."))} escolhida={feedback ? Number(feedback.escolhida) : undefined} onConfirmar={(v) => onResponder(String(v))} />

@@ -80,3 +80,10 @@ export function naReta(d: Base & { alvo: number; min: number; max: number; passo
   const { alvo, min, max, passo, tolerancia, ...base } = d;
   return { ...base, formato: "reta", resposta: num(alvo), reta: { min, max, passo, tolerancia: tolerancia ?? passo / 2 } };
 }
+
+/** Colocar itens em dois grupos. Cada item traz o índice (0 ou 1) do grupo certo. */
+export function classificar(c: Contexto, d: Base & { itens: { texto: string; grupo: 0 | 1 }[]; grupos: [string, string] }): CorpoPergunta {
+  const { itens, grupos, ...base } = d;
+  const mistura = c.r.shuffle(itens);
+  return { ...base, formato: "classificar", grupos, opcoes: mistura.map((i) => i.texto), resposta: mistura.map((i) => String(i.grupo)).join("") };
+}

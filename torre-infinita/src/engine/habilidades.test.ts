@@ -81,6 +81,17 @@ describe.each(HABILIDADES.map((h) => [h.id, h] as const))("%s", (_id, h) => {
           expect([...o].sort(), ctx).toEqual(p.resposta.split("|").sort());
           expect(o.join("|"), `já vem ordenada — ${ctx}`).not.toBe(p.resposta);
           expect(verificar(p, o.join("|")), ctx).toBe(false);
+        } else if (p.formato === "classificar") {
+          const o = p.opcoes!;
+          expect(o.length, ctx).toBe(6);
+          expect(new Set(o).size, ctx).toBe(6);
+          expect(p.grupos, ctx).toHaveLength(2);
+          expect(p.grupos![0], ctx).not.toBe(p.grupos![1]);
+          expect(p.resposta, ctx).toMatch(/^[01]{6}$/);
+          const g1 = [...p.resposta].filter((x) => x === "1").length;
+          expect(g1, `grupos desbalanceados — ${ctx}`).toBeGreaterThanOrEqual(2);
+          expect(g1, ctx).toBeLessThanOrEqual(4);
+          expect(verificar(p, "000000"), ctx).toBe(false);
         } else {
           const o = p.opcoes!;
           expect(o, ctx).toContain(p.resposta);
@@ -219,7 +230,7 @@ describe("formatos novos", () => {
     const r = criarRng(3);
     for (let i = 0; i < 60; i++) for (const q of montarRodada(e, "treino", r)) vistos.add(q.formato);
     // "digitar" só aparece depois que o aluno domina a categoria; sem histórico, nunca
-    for (const f of ["escolha", "vf", "ordenar", "reta"]) expect(vistos.has(f), f).toBe(true);
+    for (const f of ["escolha", "vf", "ordenar", "reta", "classificar"]) expect(vistos.has(f), f).toBe(true);
   });
 });
 
@@ -310,5 +321,30 @@ describe("números grandes nas alternativas", () => {
       expect(d.resposta).toMatch(/^\d+$/);
     }
     expect(visto).toBe(true);
+  });
+});
+
+describe("classificar: cada item está no grupo certo", () => {
+  const gerar = (id: string, cat: string) =>
+    Array.from({ length: SEMENTES }, (_, s) => gerarPergunta(POR_ID.get(id)!, cat, criarRng(s * 13 + 1), false));
+  const primo = (n: number) => n > 1 && Array.from({ length: n - 2 }, (_, i) => i + 2).every((d) => n % d !== 0);
+  const inteiros = (t: string) => (t.match(/-?\d+/g) ?? []).map(Number);
+
+  it("números: múltiplos e primos", () => {
+    for (const cat of ["multiplo-de-3", "multiplo-de-4"]) {
+      const d = Number(cat.slice(-1));
+      for (const p of gerar("classificar-numeros", cat)) p.opcoes!.forEach((t, i) => expect(p.resposta[i], `${t} em ${cat}`).toBe(Number(t) % d === 0 ? "0" : "1"));
+    }
+    for (const p of gerar("classificar-numeros", "primo-composto")) p.opcoes!.forEach((t, i) => expect(p.resposta[i], t).toBe(primo(Number(t)) ? "0" : "1"));
+  });
+
+  it("frações: comparar com 1 e com 1/2", () => {
+    for (const p of gerar("classificar-fracoes", "comparar-com-1")) p.opcoes!.forEach((t, i) => { const [n, d] = t.split("/").map(Number) as [number, number]; expect(p.resposta[i], t).toBe(n > d ? "1" : "0"); });
+    for (const p of gerar("classificar-fracoes", "comparar-com-meio")) p.opcoes!.forEach((t, i) => { const [n, d] = t.split("/").map(Number) as [number, number]; expect(p.resposta[i], t).toBe(2 * n > d ? "1" : "0"); });
+  });
+
+  it("inteiros: sinal do produto e da soma", () => {
+    for (const p of gerar("classificar-inteiros", "sinal-do-produto")) p.opcoes!.forEach((t, i) => { const [a, b] = inteiros(t) as [number, number]; expect(p.resposta[i], t).toBe(a * b > 0 ? "0" : "1"); });
+    for (const p of gerar("classificar-inteiros", "sinal-da-soma")) p.opcoes!.forEach((t, i) => { const [a, b] = inteiros(t) as [number, number]; expect(p.resposta[i], t).toBe(a + b > 0 ? "0" : "1"); });
   });
 });

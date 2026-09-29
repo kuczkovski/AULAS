@@ -187,6 +187,7 @@ export function Jogo() {
           apelido={estado().apelido}
           avatar={estado().avatar}
           nivel={estado().nivel}
+          chefes={estado().chefes}
           primeiraVez={tela.primeira}
           aoSalvar={guardarPerfil}
           aoVoltar={tela.primeira ? undefined : () => setTela({ t: "mapa" })}

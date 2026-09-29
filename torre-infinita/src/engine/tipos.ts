@@ -1,5 +1,5 @@
 export type Ano = 6 | 7 | 8 | 9;
-export type Formato = "escolha" | "digitar" | "vf" | "ordenar" | "reta";
+export type Formato = "escolha" | "digitar" | "vf" | "ordenar" | "reta" | "classificar";
 
 /** Modelo visual opcional exibido junto da pergunta ou da explicação. */
 export type Visual =
@@ -26,6 +26,11 @@ export interface Pergunta {
    * "ordenar" são os itens a colocar em ordem (a resposta os junta com "|").
    */
   opcoes?: string[];
+  /**
+   * Formato "classificar": os dois grupos que recebem os itens de `opcoes`.
+   * A resposta tem um dígito por item, na ordem de `opcoes`: "0" para o primeiro grupo, "1" para o segundo.
+   */
+  grupos?: [string, string];
   /** Linhas de uma resolução ("encontre o erro"), exibidas numeradas. */
   linhas?: string[];
   /** Formato "reta": o aluno toca na reta; vale a resposta dentro da tolerância. */

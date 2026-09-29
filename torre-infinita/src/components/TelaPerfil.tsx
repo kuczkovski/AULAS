@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import type { Avatar as AvatarDados } from "@/engine/tipos";
-import { ACESSORIOS, Avatar, CORES, FORMAS, NIVEL_ACESSORIO } from "./Avatar";
+import { infoZona } from "@/engine/zonas";
+import { ACESSORIOS, Avatar, CORES, FORMAS, acessorioLiberado } from "./Avatar";
 
 export function TelaPerfil({
   apelido: apelidoInicial,
   avatar: avatarInicial,
   nivel,
+  chefes,
   primeiraVez,
   aoSalvar,
   aoVoltar,
@@ -14,6 +16,7 @@ export function TelaPerfil({
   apelido: string;
   avatar: AvatarDados;
   nivel: number;
+  chefes: string[];
   primeiraVez: boolean;
   aoSalvar: (apelido: string, avatar: AvatarDados) => Promise<string | null>;
   aoVoltar?: () => void;
@@ -79,11 +82,11 @@ export function TelaPerfil({
           <legend className="rotulo mb-2">Acessório</legend>
           <div className="flex flex-wrap gap-2">
             {ACESSORIOS.map((a, i) => {
-              const livre = nivel >= NIVEL_ACESSORIO[i]!;
+              const livre = acessorioLiberado(a, nivel, chefes);
               return (
-                <button key={a} type="button" disabled={!livre} onClick={() => escolher("acessorio", i)} aria-pressed={avatar.acessorio === i}
+                <button key={a.nome} type="button" disabled={!livre} onClick={() => escolher("acessorio", i)} aria-pressed={avatar.acessorio === i}
                   className={"btn min-h-11 border-2 px-4 " + (avatar.acessorio === i ? "border-marca bg-marca-clara text-marca-escura" : "border-linha bg-white")}>
-                  {a}{!livre && <span className="text-xs font-bold text-suave"> · nível {NIVEL_ACESSORIO[i]}</span>}
+                  {a.nome}{!livre && <span className="text-xs font-bold text-suave"> · {a.zona ? `derrote ${infoZona(a.zona).chefe.nome}` : `nível ${a.nivel}`}</span>}
                 </button>
               );
             })}

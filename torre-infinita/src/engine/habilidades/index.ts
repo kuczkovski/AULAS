@@ -3,6 +3,7 @@ import { decimais, divisao, divisibilidade, mmcMdc, ordemOperacoes, potencias, s
 import { fracaoComparar, fracaoDeQuantidade, fracaoEquivalente, fracaoSimplificar } from "./fracoes";
 import { equacao1grau, inteirosMult, inteirosSoma, porcentagem, razaoProporcao } from "./ano7";
 import { encontreErroEquacao, encontreErroOrdem, fracaoNaReta, inteirosNaReta, ordenarRacionais, problemas6 } from "./formatos";
+import { classificarFracoes, classificarInteiros, classificarNumeros } from "./classificar";
 import { problemas7, problemas8, problemas9 } from "./problemas";
 import { equacao2grau, estatistica, notacaoCientifica, pitagoras, potenciasRegras, raizQuadrada, valorNumerico } from "./ano89";
 
@@ -16,6 +17,7 @@ export const HABILIDADES: Habilidade[] = [
   // formatos com toque, leitura crítica e problemas: entram na prática, não no nivelamento
   ordenarRacionais, fracaoNaReta, inteirosNaReta, encontreErroOrdem, encontreErroEquacao, problemas6,
   problemas7, problemas8, problemas9,
+  classificarNumeros, classificarFracoes, classificarInteiros,
 ];
 
 export const POR_ID = new Map(HABILIDADES.map((h) => [h.id, h]));

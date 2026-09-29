@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { alertasDoAluno, celulaDoMapa, dificuldadesDaTurma, type Alerta } from "@/engine/analise";
 import { HABILIDADES } from "@/engine/habilidades";
+import { baixarCsv, gerarCsv } from "@/lib/csv";
 import { pt } from "@/lib/formato";
 import {
   atualizarMeta, carregarTurma, criarTurma, entrarProfessor, importarAlunos, lerLista, listarTurmas,
@@ -220,7 +221,12 @@ function Geral({ turma, alunos, aoMeta }: { turma: Turma; alunos: AlunoLinha[]; 
       </section>
 
       <section className="cartao overflow-x-auto p-5 lg:col-span-2">
-        <h2 className="mb-3 text-xl font-black">Alunos</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-xl font-black">Alunos</h2>
+          <button type="button" className="btn btn-suave min-h-10" disabled={!alunos.length} onClick={() => baixarCsv(`torre-infinita-${turma.nome.replace(/[^\p{L}\p{N}]+/gu, "-")}-${new Date().toISOString().slice(0, 10)}.csv`, gerarCsv(turma, alunos))}>
+            Baixar planilha (CSV)
+          </button>
+        </div>
         <table className="w-full min-w-[40rem] text-left">
           <thead><tr className="rotulo"><th className="py-2">Aluno</th><th>Nível</th><th>Andar</th><th>Acerto</th><th>Evolução</th><th>Chefes</th><th>Pontos (semana)</th><th>Minutos</th><th>Última vez</th></tr></thead>
           <tbody>
