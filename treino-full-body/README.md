@@ -103,12 +103,12 @@ npm run icons        # regenera os ícones PNG do PWA
 
 ### Publicação no GitHub Pages (automática)
 
-O workflow `.github/workflows/treino-full-body.yml` roda testes, verificação de tipos e build em cada pull request. A cada push na `main`, ele publica o site em:
+O workflow `.github/workflows/treino-full-body.yml` roda testes, verificação de tipos e build em cada pull request. A cada push na branch padrão do repositório, ele publica o site em:
 
 - `https://kuczkovski.github.io/AULAS/treino/` — este app
 - `https://kuczkovski.github.io/AULAS/fracoes/` — a ferramenta de frações, que continua disponível
 
-Configuração, feita uma única vez: em **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**. Depois disso, cada merge na `main` publica sozinho. Para publicar sem novo commit, use **Actions → Treino Full Body → Run workflow**.
+Configuração, feita uma única vez: em **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**. Depois disso, cada merge na branch padrão publica sozinho. Para publicar sem novo commit, use **Actions → Treino Full Body → Run workflow**.
 
 Para publicar em outro subcaminho ou hospedagem, defina `NEXT_PUBLIC_BASE_PATH` no build (por exemplo, `NEXT_PUBLIC_BASE_PATH=/treino npm run build`). Deixe vazio para publicar na raiz do domínio.
 
