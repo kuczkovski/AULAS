@@ -53,8 +53,11 @@ npm run typecheck
 
 ## Supabase
 
-1. Crie um projeto e, em **Authentication → Providers**, ative **Anonymous sign-ins** (os alunos entram assim).
-2. Rode `supabase/migrations/0001_init.sql` no SQL Editor (ou `supabase db push`).
+O projeto de produção é `torre-infinita` (ref `reoekaxhwabdopgaznni`, região `sa-east-1`), com as migrações
+`0001` e `0002` já aplicadas. Para criar outro ambiente:
+
+1. Crie um projeto e, em **Authentication → Sign In / Providers**, ative **Allow anonymous sign-ins** (os alunos entram assim).
+2. Aplique `supabase/migrations/0001_init.sql` e depois `0002_endurecer_funcoes.sql` (SQL Editor ou `supabase db push`).
 3. Copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 4. Crie o usuário do professor em **Authentication → Users** (e-mail e senha).
 

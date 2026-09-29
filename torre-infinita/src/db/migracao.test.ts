@@ -14,7 +14,7 @@ describe("migração do Supabase", () => {
   it("aplica as regras de acesso esperadas", async () => {
   const db = new PGlite({ extensions: { pgcrypto } });
   await db.exec(`
-    create schema auth;
+    create schema auth; create schema extensions;
     create table auth.users(id uuid primary key);
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.sub', true),'')::uuid $$;
     create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true),''),'{}')::jsonb $$;

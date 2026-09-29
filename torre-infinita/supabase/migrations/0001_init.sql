@@ -9,7 +9,9 @@
 --
 -- Requer "Anonymous sign-ins" ativado em Authentication > Providers.
 
-create extension if not exists pgcrypto;
+-- No Supabase o pgcrypto vive no schema extensions; as funções que usam crypt()
+-- incluem esse schema no search_path.
+create extension if not exists pgcrypto with schema extensions;
 
 -- ---------------------------------------------------------------- tabelas
 
@@ -135,7 +137,7 @@ create policy rodadas_professor on public.rodadas for select to authenticated
 -- ---------------------------------------------------------------- funções do aluno
 
 create function public.entrar_aluno(p_codigo text, p_pin text) returns jsonb
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_aluno public.alunos;
   v_turma public.turmas;
@@ -234,7 +236,7 @@ language sql volatile as $$ select lpad((floor(random() * 10000))::int::text, 4,
 
 create function public.professor_importar_alunos(p_turma uuid, p_alunos jsonb)
 returns table (codigo text, nome text, pin text)
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   item jsonb;
   v_cod text;
@@ -261,7 +263,7 @@ begin
 end $$;
 
 create function public.professor_resetar_pin(p_aluno uuid) returns text
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_pin text := public.novo_pin();
 begin
@@ -287,7 +289,7 @@ group by r.turma_id, r.aluno_id, r.semana;
 revoke all on function public.entrar_aluno(text, text), public.aluno_atualizar_perfil(text, jsonb),
   public.placar_turma(), public.meta_turma(), public.professor_importar_alunos(uuid, jsonb),
   public.professor_resetar_pin(uuid), public.apelido_valido(text), public.novo_pin(),
-  public.eh_professor_da_turma(uuid), public.aluno_atual() from public;
+  public.eh_professor_da_turma(uuid), public.aluno_atual() from public, anon;
 grant execute on function public.entrar_aluno(text, text), public.aluno_atualizar_perfil(text, jsonb),
   public.placar_turma(), public.meta_turma(), public.professor_importar_alunos(uuid, jsonb),
   public.professor_resetar_pin(uuid), public.eh_professor_da_turma(uuid), public.aluno_atual() to authenticated;
