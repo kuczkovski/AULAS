@@ -1,0 +1,40 @@
+name: Diagnóstico Arcos
+
+on:
+  pull_request:
+    paths:
+      - "diagnostico-arcos/**"
+      - ".github/workflows/diagnostico-arcos.yml"
+  push:
+    paths:
+      - "diagnostico-arcos/**"
+      - ".github/workflows/diagnostico-arcos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnostico-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Tipos, testes e build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: diagnostico-arcos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: diagnostico-arcos/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      # inclui a verificação das migrações do Supabase num Postgres em memória
+      - run: npm test
+      # a build funciona sem as variáveis do Supabase (modo local); a Vercel é quem publica
+      - run: npm run build
