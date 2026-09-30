@@ -1,7 +1,7 @@
 # Diagnóstico — Arcos e Ângulos
 
 Webferramenta diagnóstica do 1º ano do Ensino Médio sobre **relações entre arcos e ângulos na circunferência**,
-a partir do *Roteiro único de desenvolvimento e aplicação*. O aluno entra só com nome e turma; o professor
+a partir do *Roteiro único de desenvolvimento e aplicação* e do *Banco de 20 exercícios diagnósticos*. O aluno entra só com nome e turma; o professor
 recebe leitura por aluno, turma, questão e habilidade, sem reduzir o diagnóstico a uma nota.
 
 - **Next.js 16** (App Router) + TypeScript + Tailwind 4, publicado na **Vercel**
@@ -25,6 +25,14 @@ recebe leitura por aluno, turma, questão e habilidade, sem reduzir o diagnósti
 Sem login, não dá para impedir duplicidade com segurança absoluta. Quem digitar o nome e a turma de um colega
 **com a prova em andamento** e clicar em "Continuar avaliação" assume aquela tentativa. É o compromisso do roteiro
 (seção 10.1); em sala, a aplicação é supervisionada. Tentativas concluídas nunca são reabertas.
+
+## Questões e dimensões
+
+20 questões (16 de múltipla escolha e 4 numéricas), com figuras em SVG nas questões que precisam delas:
+D1 = Q1–Q5 (linguagem geométrica), D2 = Q6–Q10 (circunferência), D3 = Q11–Q15 (ângulos e rotações),
+D4 = Q16–Q20 (frações da volta e ponte para o arco). O documento original tem uma D5 (Q19–Q20, integração arco × ângulo);
+ela foi incorporada à D4. Q19 e Q20 antecipam conteúdo novo, e o painel avisa que resultado baixo nelas não indica deficiência.
+As interações de clicar na figura e arrastar termos ficaram como múltipla escolha com figura, alternativa prevista no documento.
 
 ## Estrutura
 

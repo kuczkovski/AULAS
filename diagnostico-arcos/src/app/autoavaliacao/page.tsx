@@ -19,7 +19,7 @@ export default function Autoavaliacao() {
   const [enviando, setEnviando] = useState(false);
   const encerrando = useRef(false);
 
-  // sem as 15 respostas não há autoavaliação: volta para as questões
+  // sem todas as respostas não há autoavaliação: volta para as questões
   useEffect(() => {
     if (dados && QUESTOES.some(q => dados.respostas[q.id] === undefined)) router.replace("/avaliacao");
   }, [dados, router]);

@@ -24,11 +24,11 @@ describe("pontuação", () => {
   it("calcula D1–D4 (questão sem resposta não conta)", () => {
     const acertou: Record<string, boolean | null> = {};
     for (const q of QUESTOES) acertou[q.id] = true;
-    acertou.Q2 = false; acertou.Q11 = null; acertou.Q15 = false;
+    acertou.Q2 = false; acertou.Q16 = null; acertou.Q19 = false;
     const r = resultadoPorDimensao(acertou);
-    expect(r.D1).toMatchObject({ acertos: 2, total: 3 });
-    expect(r.D2).toMatchObject({ acertos: 4, total: 4, nivel: "consolidado" });
-    expect(r.D3).toMatchObject({ acertos: 3, total: 3 });
+    expect(r.D1).toMatchObject({ acertos: 4, total: 5, pct: 80, nivel: "consolidado" });
+    expect(r.D2).toMatchObject({ acertos: 5, total: 5, nivel: "consolidado" });
+    expect(r.D3).toMatchObject({ acertos: 5, total: 5 });
     expect(r.D4).toMatchObject({ acertos: 3, total: 5, pct: 60, nivel: "funcional" });
   });
 });
@@ -40,7 +40,7 @@ function aluno(nome: string, turma: string, erros: string[], opts: { auto?: numb
   return {
     tentativas: [{
       id, student_name: nome, class_name: turma, started_at: opts.inicio ?? "2026-10-01T10:00:00Z", finished_at: null,
-      duration_seconds: opts.dur ?? 1800, status: opts.status ?? "concluida", total_correct: certas.length, total_questions: 15, percentage: null,
+      duration_seconds: opts.dur ?? 1800, status: opts.status ?? "concluida", total_correct: certas.length, total_questions: 20, percentage: null,
     }],
     respostas: QUESTOES.map(q => ({
       attempt_id: id, question_id: q.id, skill: q.dim, is_correct: !erros.includes(q.id),
@@ -56,8 +56,8 @@ const juntar = (...ds: DadosBrutos[]): DadosBrutos => ({
 describe("análise do painel", () => {
   const dados = juntar(
     aluno("Ana Souza", "1º A", [], { auto: 4 }),
-    aluno("Bruno Lima", "1º A", ["Q11", "Q12", "Q13", "Q14", "Q15"], { auto: 1 }),
-    aluno("Carla Dias", "1º B", ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7"], { auto: 4, dur: 3600, status: "encerrada_por_tempo" }),
+    aluno("Bruno Lima", "1º A", ["Q16", "Q17", "Q18", "Q19", "Q20"], { auto: 1 }),
+    aluno("Carla Dias", "1º B", ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10"], { auto: 4, dur: 3600, status: "encerrada_por_tempo" }),
     aluno("Davi Rocha", "1º B", ["Q2"]),
     { tentativas: [{ ...aluno("Eva Braga", "1º C", []).tentativas[0]!, status: "em_andamento", duration_seconds: null }], respostas: [], autos: [] },
   );
@@ -82,7 +82,7 @@ describe("análise do painel", () => {
     const a = filtrarTurma(base.alunos, "1º A");
     expect(mediaPorDimensao(a)).toMatchObject({ D1: 100, D2: 100, D3: 100, D4: 50 }); // (100 + 0) / 2 em D4
     const t = resumoPorTurma(base.alunos);
-    expect(t.find(x => x.turma === "1º B")).toMatchObject({ n: 2, dim: { D1: (0 + 66.66666666666667) / 2 }, tempo: (3600 + 1800) / 2 });
+    expect(t.find(x => x.turma === "1º B")).toMatchObject({ n: 2, dim: { D1: (0 + 80) / 2 }, tempo: (3600 + 1800) / 2 });
     expect(t.find(x => x.turma === "1º D")).toMatchObject({ n: 0, geral: null });
   });
 

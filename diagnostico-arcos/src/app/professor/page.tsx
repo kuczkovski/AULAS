@@ -36,7 +36,7 @@ export default function VisaoGeral() {
         </div>
       )}
 
-      <Titulo sub="Média dos alunos que finalizaram. D4 antecipa conteúdo novo: resultado baixo é ponto de partida, não deficiência.">Desempenho por habilidade</Titulo>
+      <Titulo sub="Média dos alunos que finalizaram. D4 inclui Q19 e Q20, que antecipam conteúdo novo: resultado baixo nelas é ponto de partida, não deficiência.">Desempenho por habilidade</Titulo>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {DIMS.map(d => (
           <div key={d} className="cartao p-4">
