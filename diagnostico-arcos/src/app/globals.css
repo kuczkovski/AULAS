@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+/* Visual acadêmico e sóbrio: fundo claro, texto cinza-escuro e uma única cor de destaque (azul). */
+@theme {
+  --color-fundo: #f7f8fa;
+  --color-papel: #ffffff;
+  --color-tinta: #1f2430;
+  --color-suave: #5a6172;
+  --color-linha: #d9dde5;
+  --color-marca: #1f4fb8;
+  --color-marca-escura: #173c8c;
+  --color-marca-clara: #e8eefb;
+  --color-ok: #17683a;
+  --color-ok-fundo: #e3f4ea;
+  --color-aten: #8a5a00;
+  --color-aten-fundo: #fdf1d6;
+  --color-alerta: #a3262d;
+  --color-alerta-fundo: #fbe6e7;
+  --color-fragil-fundo: #fde7cf;
+  --font-sans: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:root { color-scheme: light; }
+html { font-size: 18px; }
+body {
+  min-height: 100dvh;
+  color: var(--color-tinta);
+  background: var(--color-fundo);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 3px solid var(--color-marca); outline-offset: 2px; border-radius: 0.5rem; }
+
+.cartao { background: var(--color-papel); border: 1px solid var(--color-linha); border-radius: 0.875rem; }
+.botao {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 3.25rem; padding: 0.5rem 1.5rem; border-radius: 0.75rem; font-weight: 600;
+  background: var(--color-marca); color: #fff; border: 2px solid var(--color-marca); cursor: pointer;
+}
+.botao:hover:not(:disabled) { background: var(--color-marca-escura); border-color: var(--color-marca-escura); }
+.botao:disabled { opacity: 0.45; cursor: not-allowed; }
+.botao-claro { background: #fff; color: var(--color-marca); }
+.botao-claro:hover:not(:disabled) { background: var(--color-marca-clara); color: var(--color-marca-escura); }
+.campo {
+  width: 100%; min-height: 3.25rem; padding: 0.5rem 1rem; border-radius: 0.75rem;
+  border: 2px solid var(--color-linha); background: #fff; font-size: 1rem;
+}
+.campo:focus { border-color: var(--color-marca); outline: none; }
+
+/* a cor não é o único sinal: cada nível também tem rótulo escrito */
+.n-consolidado { background: var(--color-ok-fundo); color: var(--color-ok); }
+.n-funcional { background: #eaf3d8; color: #41611a; }
+.n-fragil { background: var(--color-fragil-fundo); color: var(--color-aten); }
+.n-recomposicao { background: var(--color-alerta-fundo); color: var(--color-alerta); }
+
+@media print { .nao-imprimir { display: none !important; } }
