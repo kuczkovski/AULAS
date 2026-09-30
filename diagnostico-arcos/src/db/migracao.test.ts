@@ -18,7 +18,8 @@ async function novoBanco() {
     create role authenticated; create role anon;
     grant usage on schema public, auth to authenticated, anon;
   `);
-  await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/0001_diagnostico.sql", import.meta.url)), "utf8"));
+  for (const arq of ["0001_diagnostico.sql", "0002_search_path.sql", "0003_banco_20_questoes.sql"])
+    await db.exec(readFileSync(fileURLToPath(new URL("../../supabase/migrations/" + arq, import.meta.url)), "utf8"));
   await db.exec(`insert into professores (email) values ('prof@escola.test')`);
   return db;
 }
@@ -92,18 +93,18 @@ describe("migração do diagnóstico", () => {
     // respostas: validação e correção no servidor
     const salvar = (id: string, q: string, r: string) => aluno(() => rpc(db, "salvar_resposta", id, q, r));
     expect(await aluno(() => falha(salvar(ana.id, "Q1", "Centauro")))).toContain("resposta-invalida");
-    expect(await aluno(() => falha(salvar(ana.id, "Q6", "")))).toContain("resposta-invalida");
-    expect(await aluno(() => falha(salvar(ana.id, "Q6", "abc")))).toContain("resposta-invalida");
-    expect(await aluno(() => falha(salvar(ana.id, "Q6", "-90")))).toContain("resposta-invalida");
+    expect(await aluno(() => falha(salvar(ana.id, "Q14", "")))).toContain("resposta-invalida");
+    expect(await aluno(() => falha(salvar(ana.id, "Q14", "abc")))).toContain("resposta-invalida");
+    expect(await aluno(() => falha(salvar(ana.id, "Q14", "-90")))).toContain("resposta-invalida");
     expect(await aluno(() => falha(salvar(ana.id, "Q99", "1")))).toContain("questao-invalida");
-    expect(await aluno(() => falha(salvar("11111111-1111-1111-1111-111111111111", "Q1", "Raio")))).toContain("tentativa-inexistente");
+    expect(await aluno(() => falha(salvar("11111111-1111-1111-1111-111111111111", "Q1", "Reta")))).toContain("tentativa-inexistente");
 
-    expect((await salvar(ana.id, "Q6", " 180° ")).ok).toBe(true);
-    expect((await salvar(ana.id, "Q7", "90,0 graus")).ok).toBe(true);
-    await salvar(ana.id, "Q1", "Corda");
-    await salvar(ana.id, "Q1", "Raio"); // trocar a resposta regrava
+    expect((await salvar(ana.id, "Q14", " 180° ")).ok).toBe(true);
+    expect((await salvar(ana.id, "Q15", "90,0 graus")).ok).toBe(true);
+    await salvar(ana.id, "Q1", "Reta");
+    await salvar(ana.id, "Q1", "Segmento de reta"); // trocar a resposta regrava
     const estado = await aluno(() => rpc(db, "obter_tentativa", ana.id));
-    expect(estado.respostas).toMatchObject({ Q1: "Raio", Q6: "180", Q7: "90" });
+    expect(estado.respostas).toMatchObject({ Q1: "Segmento de reta", Q14: "180", Q15: "90" });
     expect(estado.resumo).toBeNull(); // nada de resultado durante a prova
     expect(JSON.stringify(estado)).not.toContain("is_correct");
 
@@ -118,28 +119,28 @@ describe("migração do diagnóstico", () => {
     await aluno(() => rpc(db, "salvar_autoavaliacao", ana.id, JSON.stringify({ A1: 3, A2: 4 })));
     await aluno(() => rpc(db, "salvar_autoavaliacao", ana.id, JSON.stringify({ A1: 2 })));
 
-    // responde todas com o gabarito, errando Q2, Q11 e Q15 (D1: 2/3, D4: 3/5)
-    const erradas: Record<string, string> = { Q2: "6 cm", Q11: "90", Q15: "60" };
+    // responde todas com o gabarito, errando Q2, Q3, Q11, Q17, Q18 e Q19
+    const erradas: Record<string, string> = { Q2: "Corda", Q3: "18 cm", Q11: "Reto", Q17: "30", Q18: "300", Q19: "1/2" };
     for (const q of QUESTOES) await salvar(ana.id, q.id, erradas[q.id] ?? respostaCerta(q.id));
     const fim = await aluno(() => rpc(db, "finalizar_tentativa", ana.id));
     expect(fim.status).toBe("concluida");
-    expect(fim.resumo.total_correct).toBe(12);
-    expect(fim.resumo.dimensoes.D1).toMatchObject({ acertos: 2, total: 3, nivel: "funcional" });
-    expect(fim.resumo.dimensoes.D2).toMatchObject({ acertos: 4, total: 4, pct: 100, nivel: "consolidado" });
-    expect(fim.resumo.dimensoes.D3).toMatchObject({ acertos: 3, total: 3 });
-    expect(fim.resumo.dimensoes.D4).toMatchObject({ acertos: 3, total: 5, pct: 60, nivel: "funcional" });
+    expect(fim.resumo.total_correct).toBe(14);
+    expect(fim.resumo.dimensoes.D1).toMatchObject({ acertos: 3, total: 5, pct: 60, nivel: "funcional" });
+    expect(fim.resumo.dimensoes.D2).toMatchObject({ acertos: 5, total: 5, pct: 100, nivel: "consolidado" });
+    expect(fim.resumo.dimensoes.D3).toMatchObject({ acertos: 4, total: 5, pct: 80, nivel: "consolidado" });
+    expect(fim.resumo.dimensoes.D4).toMatchObject({ acertos: 2, total: 5, pct: 40, nivel: "fragil" });
     expect(fim.autoavaliacao).toEqual({ A1: 2, A2: 4 });
 
     // depois de concluída, ninguém altera nada
     expect((await salvar(ana.id, "Q1", "Corda")).ok).toBe(false);
     expect((await aluno(() => rpc(db, "salvar_autoavaliacao", ana.id, JSON.stringify({ A1: 4 })))).ok).toBe(false);
-    expect((await aluno(() => rpc(db, "finalizar_tentativa", ana.id))).resumo.total_correct).toBe(12);
+    expect((await aluno(() => rpc(db, "finalizar_tentativa", ana.id))).resumo.total_correct).toBe(14);
     const { rows: [t] } = await db.query<any>(`select status, total_correct, total_questions, percentage, finished_at, duration_seconds from attempts where id = $1`, [ana.id]);
-    expect(t).toMatchObject({ status: "concluida", total_correct: 12, total_questions: 15 });
-    expect(Number(t.percentage)).toBe(80);
+    expect(t).toMatchObject({ status: "concluida", total_correct: 14, total_questions: 20 });
+    expect(Number(t.percentage)).toBe(70);
     expect(t.finished_at).toBeTruthy();
     expect(t.duration_seconds).toBeGreaterThanOrEqual(0);
-    expect((await db.query<any>(`select student_answer from answers where attempt_id=$1 and question_id='Q1'`, [ana.id])).rows[0].student_answer).toBe("Raio");
+    expect((await db.query<any>(`select student_answer from answers where attempt_id=$1 and question_id='Q1'`, [ana.id])).rows[0].student_answer).toBe("Segmento de reta");
 
     // depois de concluída, o mesmo nome pode começar outra tentativa (fica registrada, não é apagada)
     const de_novo = await aluno(() => rpc(db, "iniciar_tentativa", "Ana Souza", "1º A"));
@@ -147,13 +148,13 @@ describe("migração do diagnóstico", () => {
     expect((await db.query<any>(`select count(*)::int as n from attempts where student_key = 'ana souza' and class_name = '1º A'`)).rows[0].n).toBe(2);
 
     // tempo esgotado: a tentativa é fechada com o que foi respondido
-    await salvar(acento.id, "Q1", "Raio");
-    await salvar(acento.id, "Q2", "12 cm");
+    await salvar(acento.id, "Q1", "Segmento de reta");
+    await salvar(acento.id, "Q2", "Raio");
     await db.query(`update attempts set started_at = now() - interval '59 minutes 55 seconds' where id = $1`, [acento.id]);
     expect(await aluno(() => rpc(db, "finalizar_tentativa", acento.id, true)).then(r => r.status)).toBe("encerrada_por_tempo");
     const { rows: [te] } = await db.query<any>(`select status, total_correct, duration_seconds from attempts where id = $1`, [acento.id]);
     expect(te).toMatchObject({ status: "encerrada_por_tempo", total_correct: 2, duration_seconds: 3600 });
-    expect((await salvar(acento.id, "Q3", "Corda")).ok).toBe(false);
+    expect((await salvar(acento.id, "Q3", "36 cm")).ok).toBe(false);
 
     // tentativa abandonada é fechada sozinha quando o prazo passa
     const abandonada = await aluno(() => rpc(db, "iniciar_tentativa", "Caio Dias", "1º D"));
@@ -168,8 +169,8 @@ describe("migração do diagnóstico", () => {
     const prof = { email: "prof@escola.test" };
     const n = async (t: string) => (await db.query<any>(`select count(*)::int as n from ${t}`)).rows[0].n;
     expect(await como(db, prof, () => n("attempts"))).toBeGreaterThanOrEqual(5);
-    expect(await como(db, prof, () => n("answers"))).toBeGreaterThan(15);
-    expect(await como(db, prof, () => n("gabarito"))).toBe(15);
+    expect(await como(db, prof, () => n("answers"))).toBeGreaterThan(20);
+    expect(await como(db, prof, () => n("gabarito"))).toBe(20);
     expect(await como(db, prof, () => n("self_assessment"))).toBe(2);
     const intruso = { email: "outro@escola.test" };
     for (const t of ["attempts", "answers", "self_assessment", "gabarito"])

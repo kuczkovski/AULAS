@@ -222,7 +222,7 @@ export function leituraPedagogica(m: Record<Dim, number | null>): Leitura | null
   if (D1 < LIMITE_MUITO_BAIXO || D2 < LIMITE_MUITO_BAIXO)
     return { tom: "alerta", titulo: "Priorizar ângulos, 360° e leitura geométrica", texto: "D1 ou D2 estão muito baixos: antes de avançar para arcos, retome vocabulário da circunferência, medida de ângulos e a volta de 360°." };
   if (Math.min(D1, D2, D3) >= LIMITE_ALTO)
-    return { tom: "ok", titulo: "Pronto para iniciar arcos e ângulos", texto: D4 < LIMITE_ALTO ? "D1, D2 e D3 estão altos e D4 está baixo, o esperado: D4 antecipa o que ainda será formalizado e indica o ponto de partida." : "D1 a D4 estão altos: dá para começar com um ritmo um pouco mais rápido." };
+    return { tom: "ok", titulo: "Pronto para iniciar arcos e ângulos", texto: D4 < LIMITE_ALTO ? "D1, D2 e D3 estão altos e D4 está baixo, o esperado: em D4, as questões Q19 e Q20 antecipam o que ainda será formalizado e indicam o ponto de partida." : "D1 a D4 estão altos: dá para começar com um ritmo um pouco mais rápido." };
   return { tom: "atencao", titulo: "Fazer uma recomposição breve", texto: "D1 a D3 estão medianos: reserve um momento de recomposição antes ou durante a primeira aula, focando na dimensão mais baixa." };
 }
 

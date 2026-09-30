@@ -45,9 +45,9 @@ export function gerarDadosDemo(): DadosBrutos {
         id, student_name: nome, class_name: turma,
         started_at: new Date(Date.UTC(2026, 9, 1, 13, 0, 0) + i * 1000).toISOString(),
         finished_at: null, duration_seconds: porTempo ? 3600 : Math.round(1500 + rnd() * 1500),
-        status: porTempo ? "encerrada_por_tempo" : "concluida", total_correct: certas, total_questions: 15, percentage: (100 * certas) / 15,
+        status: porTempo ? "encerrada_por_tempo" : "concluida", total_correct: certas, total_questions: 20, percentage: (100 * certas) / 20,
       });
-      const base = Math.min(4, Math.max(1, Math.round(1 + (certas / 15) * 3 + (rnd() - 0.5) * 2.4)));
+      const base = Math.min(4, Math.max(1, Math.round(1 + (certas / 20) * 3 + (rnd() - 0.5) * 2.4)));
       for (let k = 1; k <= 7; k++) d.autos.push({ attempt_id: id, item: `A${k}`, score: Math.min(4, Math.max(1, base + Math.round((rnd() - 0.5) * 1.5))) });
     }
     n += 3;

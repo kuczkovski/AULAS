@@ -26,7 +26,7 @@ export default function Habilidades() {
               <ul className="mt-3 grid grid-cols-2 gap-1 text-sm">
                 {ORDEM.map(n => <li key={n} className={`rounded px-2 py-1 n-${n}`}>{NIVEIS[n].rotulo} <strong>{dist[n]}</strong></li>)}
               </ul>
-              {d === "D4" && <p className="mt-2 text-xs text-suave">D4 antecipa o conteúdo: resultado baixo indica o ponto de partida.</p>}
+              {d === "D4" && <p className="mt-2 text-xs text-suave">Q16–Q18 são pré-requisito; Q19–Q20 antecipam o conteúdo novo (resultado baixo nelas indica o ponto de partida).</p>}
             </section>
           );
         })}

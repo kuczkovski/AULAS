@@ -48,7 +48,7 @@ export default function Concluido() {
                     <div className="mt-3 h-3 overflow-hidden rounded-full bg-linha" role="img" aria-label={`${Math.round(r.pct)}% nesta área`}>
                       <div className="h-full bg-marca" style={{ width: `${r.pct}%` }} />
                     </div>
-                    {d === "D4" && <p className="mt-2 text-sm text-suave">Esta área antecipa o que ainda vamos aprender juntos: aqui é só o ponto de partida.</p>}
+                    {d === "D4" && <p className="mt-2 text-sm text-suave">As últimas questões desta área antecipam o que ainda vamos aprender juntos: aqui é só o ponto de partida.</p>}
                   </li>
                 );
               })}
