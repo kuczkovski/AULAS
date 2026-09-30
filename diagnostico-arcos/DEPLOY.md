@@ -2,16 +2,23 @@
 
 Lista de verificação para colocar a ferramenta no ar. O código está pronto; o que falta é criar o banco e a publicação.
 
+## Estado atual
+
+O projeto Supabase **`diagnostico-arcos`** (`iuexzechpbwjijgrvnzr`, São Paulo) já foi criado, com as migrações `0001` e `0002`
+aplicadas e verificadas (o papel público não lê nenhuma tabela e só executa as cinco funções do aluno).
+O e-mail `kuczkovski@gmail.com` já está em `professores`. **Faltam**, no painel do Supabase, criar o usuário do professor e
+desligar o cadastro livre (itens marcados abaixo) e, na Vercel, criar o projeto.
+
 ## 1. Supabase (uma vez)
 
 Crie **um projeto só para esta ferramenta** (os nomes das tabelas são genéricos e podem colidir com outros apps).
 
-- [ ] Aplique `supabase/migrations/0001_diagnostico.sql` (SQL Editor ou `supabase db push`).
+- [x] Migrações `0001` e `0002` aplicadas (para outro ambiente: SQL Editor ou `supabase db push`, em ordem).
 - [ ] **Authentication → Sign In / Providers → Email**: deixe o login por e-mail e senha ligado e **desligue "Allow new users to sign up"**.
       Os professores são criados por você em **Authentication → Users** (com e-mail confirmado). Sem isso, qualquer pessoa poderia criar uma
       conta com e-mail de professor na lista.
 - [ ] Ligue **Prevent use of leaked passwords**.
-- [ ] Autorize o(s) professor(es), no SQL Editor (e-mail em minúsculas):
+- [x] (já feito para `kuczkovski@gmail.com`) Autorize o(s) professor(es), no SQL Editor (e-mail em minúsculas):
       `insert into public.professores (email) values ('nome@escola.edu.br');`
 - [ ] **Não** ligue "Allow anonymous sign-ins": os alunos não usam o Auth.
 - [ ] Confira em **Table Editor** que `attempts`, `answers`, `self_assessment`, `gabarito` e `professores` estão com RLS ligado.
@@ -24,8 +31,8 @@ Crie **um projeto só para esta ferramenta** (os nomes das tabelas são genéric
 
    | Nome | Valor |
    |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | `https://SEU-PROJETO.supabase.co` |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | a chave `sb_publishable_...` de **Project Settings → API Keys** |
+   | `NEXT_PUBLIC_SUPABASE_URL` | `https://iuexzechpbwjijgrvnzr.supabase.co` |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_SPX21GgqNrtSp6TFT2udhg_IAwhW3Kk` (chave pública, pode ficar no navegador) |
 
    Nunca cadastre a `service_role` nem a senha do banco.
    **Sem essas variáveis o site sobe em modo local** (e o gabarito vai junto no pacote). Confira as variáveis antes de divulgar o endereço.
